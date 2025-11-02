@@ -107,5 +107,61 @@ namespace DAO
                 cmd.ExecuteNonQuery();
             }
         }
+
+        public Usuario GetById(int id)
+        {
+            using (var cn = GetConnection())
+            using (var cmd = new SqlCommand(@"
+        SELECT 
+            u.Usuario_Id,
+            u.Usuario_Email,
+            u.Usuario_Nombre,
+            u.Activo,
+            u.IntentosFallidos,
+            u.BloqueadoHasta,
+            u.UltLoginUtc,
+            u.HashAlgVer,
+            u.DatosSensiblesEnc
+        FROM Usuario u
+        WHERE u.Usuario_Id = @id;", cn))
+            {
+                cmd.Parameters.AddWithValue("@id", id);
+                cn.Open();
+                using (var rd = cmd.ExecuteReader())
+                {
+                    if (!rd.Read()) return null;
+
+                    return new Usuario
+                    {
+                        Id = rd.GetInt32(0),
+                        Email = rd.GetString(1),
+                        Nombre = rd.GetString(2),
+                        Activo = rd.GetBoolean(3),
+                        IntentosFallidos = rd.GetInt32(4),
+                        BloqueadoHastaUtc = rd.IsDBNull(5) ? (DateTime?)null : rd.GetDateTime(5),
+                        UltLoginUtc = rd.IsDBNull(6) ? (DateTime?)null : rd.GetDateTime(6),
+                        HashAlgVer = rd.IsDBNull(7) ? "PBKDF2-SHA256-v1" : rd.GetString(7),
+                        DatosSensiblesEnc = rd.IsDBNull(8) ? null : (byte[])rd[8]
+                    };
+                }
+            }
+        }
+        public void ActualizarUsuario(int id, string nuevoNombre, bool nuevoActivo)
+        {
+            using (var cn = GetConnection())
+            using (var cmd = new SqlCommand(@"
+        UPDATE Usuario
+        SET Usuario_Nombre = @nom,
+            Activo = @act
+        WHERE Usuario_Id = @id;", cn))
+            {
+                cmd.Parameters.AddWithValue("@id", id);
+                cmd.Parameters.AddWithValue("@nom", nuevoNombre);
+                cmd.Parameters.AddWithValue("@act", nuevoActivo);
+                cn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
     }
 }

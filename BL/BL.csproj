@@ -44,6 +44,9 @@
     <Compile Include="AdminSeedHelper.cs" />
     <Compile Include="AuthService.cs" />
     <Compile Include="CryptoManager.cs" />
+    <Compile Include="IdiomaManager.cs" />
+    <Compile Include="IdiomaService.cs" />
+    <Compile Include="IIdiomaObserver.cs" />
     <Compile Include="SessionManager.cs" />
     <Compile Include="UserAdminService.cs" />
     <Compile Include="UserLoginBL.cs" />

@@ -12,11 +12,15 @@ using BL;
 
 namespace Proyecto_IS_Sistema_De_Tickets
 {
-    public partial class FormLogin : Form
+    public partial class FormLogin : Form, IIdiomaObserver
     {
+        private readonly IdiomaService _idiomaSrv = new IdiomaService();
         public FormLogin()
         {
             InitializeComponent();
+
+            // me suscribo al observer
+            IdiomaManager.Instancia.Suscribir(this);
         }
         #region Diseño
         [DllImport("user32.DLL", EntryPoint = "ReleaseCapture")]
@@ -39,6 +43,40 @@ namespace Proyecto_IS_Sistema_De_Tickets
             string sql = AdminSeedHelper.BuildUpdateAdminSql("admin@sistema.com", "Admin123!");
             Console.WriteLine(sql);
 
+            // 1) cargar idiomas al combo (si lo tenés, si no, escondé el combo)
+            var idiomas = _idiomaSrv.ListarIdiomas();
+            if (cmbIdiomas != null)
+            {
+                cmbIdiomas.DataSource = idiomas;
+                cmbIdiomas.DisplayMember = "Nombre";
+                cmbIdiomas.ValueMember = "Codigo";
+
+                var def = idiomas.FirstOrDefault(i => i.EsPorDefecto);
+                if (def != null)
+                    cmbIdiomas.SelectedValue = def.Codigo;
+            }
+
+            // 2) aplicar idioma por defecto
+            _idiomaSrv.SeleccionarIdiomaPorDefecto();
+
+        }
+
+        // este lo llama el IdiomaManager
+        public void ActualizarIdioma(Dictionary<string, string> t)
+        {
+            // título arriba
+            lblTituloLogin.Text = t["LOGIN_TITULO"];
+
+            // labels
+            txt_Usuario.Text = t["LOGIN_USUARIO"];
+            txt_Contraseña.Text = t["LOGIN_CONTRASENA"];
+
+            // botón
+            btnAcceder.Text = t["LOGIN_BTN_ACCEDER"];
+
+            //// si tenés link
+            //if (lnkOlvido != null)
+            //    lnkOlvido.Text = "[ " + t["LOGIN_CONTRASENA"] + " ? ]"; // o una etiqueta propia
         }
 
         private void txt_Usuario_Enter(object sender, EventArgs e)
@@ -112,5 +150,25 @@ namespace Proyecto_IS_Sistema_De_Tickets
             lblError.Text = "     " + msg;
             lblError.Visible = true;
         }
+
+        private void txt_Usuario_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cmbIdiomas_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbIdiomas.SelectedValue is string cod && !string.IsNullOrWhiteSpace(cod))
+                _idiomaSrv.SeleccionarIdioma(cod);
+        }
+
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            IdiomaManager.Instancia.Desuscribir(this);
+            base.OnFormClosed(e);
+        }
+
+
     }
 }

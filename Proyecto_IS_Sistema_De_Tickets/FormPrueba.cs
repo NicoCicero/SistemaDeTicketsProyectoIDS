@@ -14,18 +14,25 @@ using System.Windows.Forms;
 
 namespace Proyecto_IS_Sistema_De_Tickets
 {
-    public partial class FormPrueba : Form
+    public partial class FormPrueba : Form, IIdiomaObserver
     {
+        private readonly IdiomaService _idiomaSrv = new IdiomaService();
+
         private bool _registroVisible = false;   // estado del bloque de registro
         private bool _regRolesCargados = false;  // ya lo tenés: lo dejamos 
+
+        private TabPage _tabRegistrar;
+        private TabPage _tabBitacora;
+        private TabPage _tabCambios;
         public FormPrueba()
         {
             InitializeComponent();
+            IdiomaManager.Instancia.Suscribir(this);
         }
 
         private void FormPrueba_Load(object sender, EventArgs e)
         {
-            // Si alguien abre sin login, por seguridad:
+            ConfigurarDgvCambios();
             if (SessionManager.Instancia.UsuarioActual == null)
             {
                 MessageBox.Show("La sesión no está activa. Volviendo al login.");
@@ -33,44 +40,83 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 return;
             }
 
-            // Mostrar/ocultar según rol
             bool esAdmin = SessionManager.Instancia.TieneRol("Administrador");
-            var roles = string.Join(", ", SessionManager.Instancia.UsuarioActual.Roles.Select(r => r.Nombre));
-            this.Text = $"FormPrueba - {SessionManager.Instancia.UsuarioActual.Email} [{roles}]";
+            var rolesUser = string.Join(", ", SessionManager.Instancia.UsuarioActual.Roles.Select(r => r.Nombre));
+            this.Text = $"FormPrueba - {SessionManager.Instancia.UsuarioActual.Email} [{rolesUser}]";
 
-            // Ocultar bloque de registro al iniciar
-            SetRegistrarVisible(false);
+            // guardo tabs
+            _tabRegistrar = tabGeneral.TabPages.Count > 1 ? tabGeneral.TabPages[1] : null;
+            _tabBitacora = tabGeneral.TabPages.Count > 2 ? tabGeneral.TabPages[2] : null;
+            _tabCambios = tabGeneral.TabPages.Count > 3 ? tabGeneral.TabPages[3] : null;
 
-            // Asegurar modo contraseña y toggle “Mostrar contraseña”
-            txtContraseña.UseSystemPasswordChar = true;
-            txtConfirmarContraseña.UseSystemPasswordChar = true;
-            chkMostrarContraseña.CheckedChanged += (s, ev) =>
+            if (esAdmin)
             {
-                bool ver = chkMostrarContraseña.Checked;
-                txtContraseña.UseSystemPasswordChar = !ver;
-                txtConfirmarContraseña.UseSystemPasswordChar = !ver;
-            };
+                SetRegistrarVisible(true);
+                CargarGrillaGestionUsuarios();
+
+                CargarEventosBitacoraHardcoded();
+                CargarBitacoraInicial();
+
+                CargarCambiosInicial();
+            }
+            else
+            {
+                if (_tabRegistrar != null) tabGeneral.TabPages.Remove(_tabRegistrar);
+                if (_tabBitacora != null) tabGeneral.TabPages.Remove(_tabBitacora);
+                if (_tabCambios != null) tabGeneral.TabPages.Remove(_tabCambios);
+                SetRegistrarVisible(false);
+            }
+
+            var idiomas = _idiomaSrv.ListarIdiomas();
+            if (cmbIdiomas != null)
+            {
+                cmbIdiomas.DataSource = idiomas;
+                cmbIdiomas.DisplayMember = "Nombre";   // 👈 propiedad de IdiomaDTO
+                cmbIdiomas.ValueMember = "Codigo";     // 👈 propiedad de IdiomaDTO
+
+                // seleccionar por defecto
+                var def = idiomas.FirstOrDefault(i => i.EsPorDefecto);
+                if (def != null)
+                    cmbIdiomas.SelectedValue = def.Codigo;
+            }
+
+            // disparo el idioma por defecto para que todos los forms se pinten
+            _idiomaSrv.SeleccionarIdiomaPorDefecto();
 
         }
-        private void ResetRegistrarForm()
+
+        // este es el MÉTODO que llama el observer
+        public void ActualizarIdioma(Dictionary<string, string> t)
         {
-            txtEmail.Text = "";
-            txtNombre.Text = "";
-            txtContraseña.Text = "";
-            txtConfirmarContraseña.Text = "";
-            chkMostrarContraseña.Checked = false;
-            chkActivo.Checked = true;
+            // pestañas
+            tabGeneral.TabPages[0].Text = t["TAB_MENU"];
+            tabGeneral.TabPages[1].Text = t["TAB_USUARIOS"];
+            tabGeneral.TabPages[2].Text = t["TAB_BITACORA"];
+            tabGeneral.TabPages[3].Text = t["TAB_CONTROL_CAMBIOS"];
 
-            // si ya agregaste ErrorProvider, también podés limpiar acá:
-            // errorProviderReg.Clear();
+            // botones
+            btnCerrarSesion.Text = t["BTN_CERRAR_SESION"];
+            btnActualizar.Text = t["BTN_ACTUALIZAR"];
+            btnNuevoRegistro.Text = t["BTN_NUEVO_REGISTRO"];
 
-            // desmarcar roles si hubiera
-            for (int i = 0; i < clbRoles.Items.Count; i++)
-                clbRoles.SetItemChecked(i, false);
+            // bitácora
+            lblUsuarioId.Text = t["LBL_USUARIO_ID"];
+            lblAuditoriaId.Text = t["LBL_AUDITORIA_ID"];
+            lblEvento.Text = t["LBL_EVENTO"];
+            lblDetalle.Text = t["LBL_DETALLE"];
+            lblFecha.Text = t["LBL_FECHA"];
+            btnFiltrarBitacora.Text = t["BTN_FILTRAR"];
+            btnLimpiar.Text = t["BTN_LIMPIAR"];
 
-            // password oculto
-            txtContraseña.UseSystemPasswordChar = true;
-            txtConfirmarContraseña.UseSystemPasswordChar = true;
+            // control cambios
+            lblCambioId.Text = t["LBL_CAMBIO_ID"];
+            lblCambioUsuarioId.Text = t["LBL_CAMBIO_USUARIO_ID"];
+            lblCambioEntidad.Text = t["LBL_CAMBIO_ENTIDAD"];
+            lblCambioEntidadId.Text = t["LBL_CAMBIO_ENTIDAD_ID"];
+            lblCambioCampo.Text = t["LBL_CAMBIO_CAMPO"];
+            //lblCambioFecha.Text = t["LBL_CAMBIO_FECHA"];
+            btnFiltrarCambios.Text = t["BTN_FILTRAR"];
+            btnLimpiarCambios.Text = t["BTN_LIMPIAR"];
         }
 
         private void btnCerrarSesion_Click(object sender, EventArgs e)
@@ -81,176 +127,108 @@ namespace Proyecto_IS_Sistema_De_Tickets
             // Volvemos limpio al login (lo más simple para WinForms)
             Application.Restart();
         }
-        private void SetRegistrarVisible(bool v)
-        {
-            // Labels (ajustá los nombres si tenés otros)
-            lblEmail.Visible = v;
-            lblNombre.Visible = v;
-            lblContraseña.Visible = v;
-            lblConfirmarContraseña.Visible = v;
-
-            // Inputs
-            txtEmail.Visible = v;
-            txtNombre.Visible = v;
-            txtContraseña.Visible = v;
-            txtConfirmarContraseña.Visible = v;
-            clbRoles.Visible = v;
-
-            // Checks
-            chkMostrarContraseña.Visible = v;
-            chkActivo.Visible = v;
-
-            // Botones del bloque de registro
-            btnGuardar.Visible = v;   // ← este es el “Guardar” que se ve en tu captura
-            btnCancelar.Visible = v;
-        }
-
-        private void CargarRolesDesdeBD()
-        {
-            try
-            {
-                clbRoles.CheckOnClick = true;
-                clbRoles.Items.Clear();
-
-                var roles = UserAdminService.Instancia.ListarRoles();  // BL → DAL → BD
-                foreach (var r in roles)
-                    clbRoles.Items.Add(r, false);  // BE.Rol.ToString() => Nombre
-            }
-            catch (UnauthorizedAccessException)
-            {
-                MessageBox.Show("No tenés permisos de Administrador.");
-                _registroVisible = false;
-                SetRegistrarVisible(false);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al cargar roles: " + ex.Message);
-                _registroVisible = false;
-                SetRegistrarVisible(false);
-            }
-        }
-
-        private void btnCancelar_Click(object sender, EventArgs e)
-        {
-            _registroVisible = false;
-            SetRegistrarVisible(false);
-        }
-
-        private void btnGuardar_Click(object sender, EventArgs e)
-        {
-            // Validaciones simples en UI
-            string email = txtEmail.Text.Trim();
-            string nombre = txtNombre.Text.Trim();
-            string pass1 = txtContraseña.Text;
-            string pass2 = txtConfirmarContraseña.Text;
-            bool activo = chkActivo.Checked;
-
-            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
-            {
-                MessageBox.Show("Email inválido."); txtEmail.Focus(); return;
-            }
-            if (string.IsNullOrWhiteSpace(nombre))
-            {
-                MessageBox.Show("Nombre requerido."); txtNombre.Focus(); return;
-            }
-            if (pass1.Length < 8)
-            {
-                MessageBox.Show("La contraseña debe tener al menos 8 caracteres."); txtContraseña.Focus(); return;
-            }
-            if (pass1 != pass2)
-            {
-                MessageBox.Show("Las contraseñas no coinciden."); txtConfirmarContraseña.Focus(); return;
-            }
-            if (clbRoles.CheckedItems.Count == 0)
-            {
-                MessageBox.Show("Seleccioná al menos un rol."); clbRoles.Focus(); return;
-            }
-
-            var rolesIds = clbRoles.CheckedItems.Cast<BE.Rol>().Select(r => r.Id).ToList();
-
-            try
-            {
-                int nuevoId = UserAdminService.Instancia.CrearUsuario(email, nombre, pass1, activo, rolesIds);
-                MessageBox.Show("Usuario creado. Id=" + nuevoId);
-
-                // Limpiar u ocultar la sección (como prefieras)
-                _registroVisible = false;
-                SetRegistrarVisible(false);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            catch (InvalidOperationException ex) // email duplicado
-            {
-                MessageBox.Show(ex.Message);
-                txtEmail.Focus();
-            }
-            catch (ArgumentException ex) // alguna validación de BL
-            {
-                MessageBox.Show(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al guardar: " + ex.Message);
-            }
-        }
 
         private void TabGeneral_SelectedIndexChanged(object sender, EventArgs e)
         {
+            bool esAdmin = SessionManager.Instancia.TieneRol("Administrador");
+
             switch (tabGeneral.SelectedIndex)
             {
-                case 0: // Primera pestaña "Menu Principal"
-                        // Lógica para la primera tab
-                    MessageBox.Show("Estás en Menu Principal");
+                case 0: // 🏠 Menú principal
+                        // No hay restricción, todos pueden verlo
                     break;
-                case 1:
-                    if (!BL.SessionManager.Instancia.TieneRol("Administrador"))
+
+                case 1: // 👤 Registrar usuarios
+                    if (!esAdmin)
                     {
-                        MessageBox.Show("Solo un Administrador puede registrar usuarios.");
-                        // Volvemos a la pestaña anterior
-                        tabGeneral.SelectedIndex = 0;
+                        MessageBox.Show("Solo un Administrador puede gestionar usuarios.");
+                        tabGeneral.SelectedIndex = 0; // vuelve al menú
                         return;
                     }
 
-                    _registroVisible = true;
+                    // Si es admin, mostramos y refrescamos la grilla
                     SetRegistrarVisible(true);
-
-                    ResetRegistrarForm();
-                    if (!_regRolesCargados)
-                    {
-                        CargarRolesDesdeBD();   // ahora trae de la BD
-                        _regRolesCargados = true;
-                    }
+                    CargarGrillaGestionUsuarios();
                     break;
-                case 2:
-                    if (!BL.SessionManager.Instancia.TieneRol("Administrador"))
+
+                case 2: // 📜 Bitácora
+                    if (!esAdmin)
                     {
                         MessageBox.Show("Solo un Administrador puede ver la Bitácora.");
                         tabGeneral.SelectedIndex = 0;
                         return;
                     }
 
+                    // Carga inicial (si no se cargó antes)
                     CargarEventosBitacoraHardcoded();
-
-                    // defaults de fechas (sin “limitar”)
-                    dtpDesde.Value = new DateTime(2000, 1, 1);
-                    dtpHasta.Value = DateTime.Today.AddDays(1);
-
-                    // carga inicial (sin filtros de texto)
-                    var repoInit = new AuditoriaRepository();
-                    dgvBitacora.AutoGenerateColumns = true;
-                    dgvBitacora.DataSource = repoInit.FiltrarAuditoria(
-                        id: null,
-                        usuarioId: null,
-                        evento: null,
-                        texto: null,
-                        desdeUtc: DateTime.SpecifyKind(dtpDesde.Value.Date, DateTimeKind.Local).ToUniversalTime(),
-                        hastaUtcExcl: DateTime.SpecifyKind(dtpHasta.Value.Date.AddDays(1), DateTimeKind.Local).ToUniversalTime()
-                    );
-
+                    CargarBitacoraInicial();
+                    break;
+                case 3: // 👈 cambios
+                    if (!esAdmin)
+                    {
+                        MessageBox.Show("Solo un Administrador puede ver el Control de Cambios.");
+                        tabGeneral.SelectedIndex = 0;
+                        return;
+                    }
+                    CargarCambiosInicial();
+                    break;
+                default:
+                    // En caso de que se agreguen nuevas pestañas y quieras controlar más
+                    tabGeneral.SelectedIndex = 0;
                     break;
             }
+        }
+        private void CargarCambiosInicial()
+        {
+            var repo = new ControlCambiosRepository();
+
+            dtpCambiosDesde.Value = new DateTime(2000, 1, 1);
+            dtpCambiosHasta.Value = DateTime.Today.AddDays(1);
+
+            var datos = repo.FiltrarCambios(
+                id: null,
+                usuarioId: null,
+                entidad: null,
+                entidadId: null,
+                campo: null,
+                desdeUtc: DateTime.SpecifyKind(dtpCambiosDesde.Value.Date, DateTimeKind.Local).ToUniversalTime(),
+                hastaUtcExcl: DateTime.SpecifyKind(dtpCambiosHasta.Value.Date.AddDays(1), DateTimeKind.Local).ToUniversalTime()
+            );
+
+            // 👇 esto es clave: ya definimos las columnas nosotros
+            dgvCambios.AutoGenerateColumns = false;
+            dgvCambios.DataSource = datos;
+        }
+        private void CargarBitacoraInicial()
+        {
+            var repoInit = new AuditoriaRepository();
+
+            // por defecto: desde 2000 hasta mañana
+            dtpDesde.Value = new DateTime(2000, 1, 1);
+            dtpHasta.Value = DateTime.Today.AddDays(1);
+
+            dgvBitacora.AutoGenerateColumns = true;
+            dgvBitacora.DataSource = repoInit.FiltrarAuditoria(
+                id: null,
+                usuarioId: null,
+                evento: null,
+                texto: null,
+                desdeUtc: DateTime.SpecifyKind(dtpDesde.Value.Date, DateTimeKind.Local).ToUniversalTime(),
+                hastaUtcExcl: DateTime.SpecifyKind(dtpHasta.Value.Date.AddDays(1), DateTimeKind.Local).ToUniversalTime()
+            );
+
+            // formateo de columnas
+            if (dgvBitacora.Columns["FechaUtc"] != null)
+                dgvBitacora.Columns["FechaUtc"].DefaultCellStyle.Format = "yyyy-MM-dd HH:mm:ss";
+            if (dgvBitacora.Columns["Detalle"] != null)
+                dgvBitacora.Columns["Detalle"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+        }
+
+        private void SetRegistrarVisible(bool v)
+        {
+            dgvGestionUsuario.Visible = v;
+            btnActualizar.Visible = v;
+            btnNuevoRegistro.Visible = v;
         }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -319,7 +297,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
             if (_eventosCargados) return;
 
             cmbEvento.Items.Clear();
-            cmbEvento.Items.Add(""); // = “Todos”
+            cmbEvento.Items.Add("");
             cmbEvento.Items.AddRange(new object[] {
         "APP_START","APP_EXIT","LOGIN_OK","LOGIN_FAIL","LOGIN_BLOQUEADO",
         "LOGOUT","PERMISO_DENEGADO","CAMBIO_PASSWORD",
@@ -327,6 +305,210 @@ namespace Proyecto_IS_Sistema_De_Tickets
     });
             cmbEvento.SelectedIndex = 0;
             _eventosCargados = true;
+        }
+
+        private void tabRegistrar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        public void CargarGrillaGestionUsuarios()
+        {
+            // este método ahora se usa SOLO cuando ya sabemos que es admin
+            var usuarios = BL.UserAdminService.Instancia.ListarUsuarios();
+            dgvGestionUsuario.AutoGenerateColumns = true;
+            dgvGestionUsuario.DataSource = usuarios;
+
+            if (dgvGestionUsuario.Columns["Roles"] != null)
+                dgvGestionUsuario.Columns["Roles"].Visible = false;
+            if (dgvGestionUsuario.Columns["Permisos"] != null)
+                dgvGestionUsuario.Columns["Permisos"].Visible = false;
+            if (dgvGestionUsuario.Columns["DatosSensiblesEnc"] != null)
+                dgvGestionUsuario.Columns["DatosSensiblesEnc"].Visible = false;
+
+        }
+
+        private void btnActualizar_Click(object sender, EventArgs e)
+        {
+            if (dgvGestionUsuario.CurrentRow == null)
+            {
+                MessageBox.Show("Seleccioná un usuario primero.");
+                return;
+            }
+
+            var usuario = dgvGestionUsuario.CurrentRow.DataBoundItem as BE.Usuario;
+            if (usuario == null)
+            {
+                MessageBox.Show("No se pudo obtener el usuario seleccionado.");
+                return;
+            }
+
+            var f = new FormGestionDeUsuario(
+                FormGestionDeUsuario.ModoFormulario.Edicion,
+                usuarioId: usuario.Id);
+
+            f.FormClosed += (_, __) => CargarGrillaGestionUsuarios();
+            f.ShowDialog(this);
+        }
+
+        private void btnNuevoRegistro_Click(object sender, EventArgs e)
+        {
+            var f = new FormGestionDeUsuario(
+               FormGestionDeUsuario.ModoFormulario.Alta,
+               usuarioId: null);
+
+            f.FormClosed += (_, __) => CargarGrillaGestionUsuarios();
+            f.ShowDialog(this);
+        }
+
+        private void btnFiltrarCambios_Click(object sender, EventArgs e)
+        {
+            int? id = int.TryParse(txtCambioUsuarioId.Text, out var vId) ? vId : (int?)null;
+            int? usuarioId = int.TryParse(txtCambioId.Text, out var vUid) ? vUid : (int?)null;
+            string entidad = string.IsNullOrWhiteSpace(txtCambioEntidad.Text) ? null : txtCambioEntidad.Text.Trim();
+            int? entidadId = int.TryParse(txtCambioEntidadId.Text, out var vEid) ? vEid : (int?)null;
+            string campo = string.IsNullOrWhiteSpace(txtCambioCampo.Text) ? null : txtCambioCampo.Text.Trim();
+
+            var desdeUtc = DateTime.SpecifyKind(dtpCambiosDesde.Value.Date, DateTimeKind.Local).ToUniversalTime();
+            var hastaUtc = DateTime.SpecifyKind(dtpCambiosHasta.Value.Date.AddDays(1), DateTimeKind.Local).ToUniversalTime();
+
+            var repo = new ControlCambiosRepository();
+            var datos = repo.FiltrarCambios(
+                id: id,
+                usuarioId: usuarioId,
+                entidad: entidad,
+                entidadId: entidadId,
+                campo: campo,
+                desdeUtc: desdeUtc,
+                hastaUtcExcl: hastaUtc
+            );
+
+            dgvCambios.AutoGenerateColumns = true;
+            dgvCambios.DataSource = datos;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnLimpiarCambios_Click(object sender, EventArgs e)
+        {
+            txtCambioUsuarioId.Clear();
+            txtCambioId.Clear();
+            txtCambioEntidad.Clear();
+            txtCambioEntidadId.Clear();
+            txtCambioCampo.Clear();
+
+            dtpCambiosDesde.Value = new DateTime(2000, 1, 1);
+            dtpCambiosHasta.Value = DateTime.Today.AddDays(1);
+
+            CargarCambiosInicial();
+        }
+        private void ConfigurarDgvCambios()
+        {
+            // NO dejamos que se autogenere nada
+            dgvCambios.AutoGenerateColumns = false;
+            dgvCambios.Columns.Clear();
+
+            // queremos scroll horizontal
+            dgvCambios.ScrollBars = ScrollBars.Both;
+            dgvCambios.RowHeadersVisible = false;
+            dgvCambios.AllowUserToAddRows = false;
+
+            // ahora definimos TODAS las columnas que queremos ver
+
+            dgvCambios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Id",
+                HeaderText = "Id",
+                DataPropertyName = "Id",
+                Width = 50
+            });
+
+            dgvCambios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "FechaUtc",
+                HeaderText = "Fecha (UTC)",
+                DataPropertyName = "FechaUtc",
+                Width = 140,
+                DefaultCellStyle = { Format = "yyyy-MM-dd HH:mm:ss" }
+            });
+
+            dgvCambios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "UsuarioId",
+                HeaderText = "Usuario",
+                DataPropertyName = "UsuarioId",
+                Width = 70
+            });
+
+            dgvCambios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Entidad",
+                HeaderText = "Entidad",
+                DataPropertyName = "Entidad",
+                Width = 90
+            });
+
+            dgvCambios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "EntidadId",
+                HeaderText = "EntidadId",
+                DataPropertyName = "EntidadId",
+                Width = 80
+            });
+
+            dgvCambios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Accion",
+                HeaderText = "Acción",
+                DataPropertyName = "Accion",
+                Width = 100
+            });
+
+            dgvCambios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Campo",
+                HeaderText = "Campo",
+                DataPropertyName = "Campo",
+                Width = 110
+            });
+
+            dgvCambios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "ValorAnterior",
+                HeaderText = "Valor anterior",
+                DataPropertyName = "ValorAnterior",
+                Width = 180,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.None
+            });
+
+            // 👇 ESTA es la que te falta ver
+            dgvCambios.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "ValorNuevo",
+                HeaderText = "Valor nuevo",
+                DataPropertyName = "ValorNuevo",
+                Width = 220,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.None
+            });
+
+            // por seguridad, que el grid NO vuelva a autoajustar
+            dgvCambios.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+        }
+
+        private void cmbIdiomas_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbIdiomas.SelectedValue is string cod && !string.IsNullOrWhiteSpace(cod))
+            {
+                _idiomaSrv.SeleccionarIdioma(cod);
+            }
+        }
+
+        private void FormPrueba_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            IdiomaManager.Instancia.Desuscribir(this);
         }
     }
 }
