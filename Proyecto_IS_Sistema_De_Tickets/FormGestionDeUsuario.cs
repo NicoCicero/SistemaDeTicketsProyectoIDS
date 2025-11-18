@@ -24,6 +24,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
             _usuarioId = usuarioId;
 
             IdiomaManager.Instancia.Suscribir(this);
+            tvPermisos.AfterCheck += TvPermisos_AfterCheck;
         }
         public enum ModoFormulario
         {
@@ -32,6 +33,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
         }
         private readonly ModoFormulario _modo;
         private readonly int? _usuarioId;
+        private bool _suspendCheckEvents;
 
         public void ActualizarIdioma(Dictionary<string, string> t)
         {
@@ -87,10 +89,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 }
             }
 
-            // al menos un rol
-            if (rolesIds.Count == 0)
+            // debe haber un único rol seleccionado
+            if (rolesIds.Count != 1)
             {
-                MessageBox.Show("Seleccioná al menos un rol.");
+                MessageBox.Show("Seleccioná exactamente un rol.");
                 return;
             }
 
@@ -265,25 +267,37 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 Application.Restart();
                 return;
             }
-            if (!SessionManager.Instancia.TienePermiso("Usuario.Modificar"))
+            bool puedeModificar = SessionManager.Instancia.TienePermiso("Usuario.Modificar");
+            bool puedeCrear = SessionManager.Instancia.TienePermiso("Usuario.Alta");
+
+            if (_modo == ModoFormulario.Alta)
             {
-                MessageBox.Show("No contás con permiso para administrar usuarios.");
-                Close();
-                return;
+                if (!puedeCrear)
+                {
+                    MessageBox.Show("No contás con permiso para dar de alta usuarios.");
+                    Close();
+                    return;
+                }
+
+                lblGestionUsuario.Tag = "NEW";
+                chkActivo.Checked = true;
+            }
+            else
+            {
+                if (!puedeModificar)
+                {
+                    MessageBox.Show("No contás con permiso para modificar usuarios.");
+                    Close();
+                    return;
+                }
+
+                lblGestionUsuario.Tag = "EDIT";
             }
 
             CargarTreeRolesYPermisos();
 
-            if (_modo == ModoFormulario.Alta)
+            if (_modo == ModoFormulario.Edicion && _usuarioId.HasValue)
             {
-                lblGestionUsuario.Tag = "NEW";
-                chkActivo.Checked = true;
-
-            }
-            else
-            {
-                lblGestionUsuario.Tag = "EDIT";
-
                 CargarUsuarioEnControles(_usuarioId.Value);
             }
             txtContraseña.UseSystemPasswordChar = true;
@@ -306,41 +320,38 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         private void CargarTreeRolesYPermisos()
         {
-            tvPermisos.Nodes.Clear();
-
-            // 1) nodo de roles
-            var nodoRoles = new TreeNode("Roles");
-            var roles = UserAdminService.Instancia.ListarRoles();
-            foreach (var r in roles)
+            _suspendCheckEvents = true;
+            tvPermisos.BeginUpdate();
+            try
             {
-                nodoRoles.Nodes.Add(new TreeNode(r.Nombre)
+                tvPermisos.Nodes.Clear();
+
+                var nodoRoles = new TreeNode("Roles");
+                var roles = UserAdminService.Instancia.ListarRoles();
+                foreach (var r in roles)
                 {
-                    Tag = "ROL_" + r.Id
-                });
-            }
-            tvPermisos.Nodes.Add(nodoRoles);
+                    nodoRoles.Nodes.Add(new TreeNode(r.Nombre)
+                    {
+                        Tag = "ROL_" + r.Id
+                    });
+                }
+                tvPermisos.Nodes.Add(nodoRoles);
 
-            // 2) nodo de permisos
-            var nodoPerms = new TreeNode("Permisos");
-            var arbolPerms = PermisoService.Instancia.ObtenerArbolPermisos();
-            foreach (var p in arbolPerms)
-            {
-                nodoPerms.Nodes.Add(CrearNodoPermiso(p));
+                var nodoPerms = new TreeNode("Permisos");
+                var arbolPerms = PermisoService.Instancia.ObtenerArbolPermisos();
+                foreach (var p in arbolPerms)
+                {
+                    nodoPerms.Nodes.Add(PermisoTreeHelper.CrearNodo(p));
+                }
+                tvPermisos.Nodes.Add(nodoPerms);
             }
-            tvPermisos.Nodes.Add(nodoPerms);
+            finally
+            {
+                tvPermisos.EndUpdate();
+                _suspendCheckEvents = false;
+            }
 
             tvPermisos.ExpandAll();
-        }
-
-        private TreeNode CrearNodoPermiso(BE.PermisoNodo p)
-        {
-            var n = new TreeNode(p.Nombre)
-            {
-                Tag = "PERM_" + p.Id
-            };
-            foreach (var h in p.Hijos)
-                n.Nodes.Add(CrearNodoPermiso(h));
-            return n;
         }
 
 
@@ -366,32 +377,41 @@ namespace Proyecto_IS_Sistema_De_Tickets
         {
             // roles del usuario
             var u = UserAdminService.Instancia.ObtenerUsuarioCompleto(usuarioId);
-            var rolesUsuario = u.Roles.Select(r => r.Id).ToHashSet();
+            var rolesUsuario = u.Roles?.Select(r => r.Id).ToList() ?? new List<int>();
+            int? rolPrincipal = rolesUsuario.FirstOrDefault();
 
             // permisos directos del usuario (si tenés tabla UsuarioPermiso)
             var permisosDirectos = new DAO.UsuarioPermisoRepository().GetPermisosDirectos(usuarioId).Select(p => p.Id).ToHashSet();
 
-            foreach (TreeNode raiz in tvPermisos.Nodes)
+            _suspendCheckEvents = true;
+            try
             {
-                foreach (TreeNode hijo in raiz.Nodes)
+                foreach (TreeNode raiz in tvPermisos.Nodes)
                 {
-                    if (hijo.Tag is string tag)
+                    foreach (TreeNode hijo in raiz.Nodes)
                     {
-                        if (tag.StartsWith("ROL_"))
+                        if (hijo.Tag is string tag)
                         {
-                            int rolId = int.Parse(tag.Substring(4));
-                            hijo.Checked = rolesUsuario.Contains(rolId);
+                            if (tag.StartsWith("ROL_"))
+                            {
+                                int rolId = int.Parse(tag.Substring(4));
+                                hijo.Checked = rolPrincipal.HasValue && rolId == rolPrincipal.Value;
+                            }
+                            else if (tag.StartsWith("PERM_"))
+                            {
+                                int permId = int.Parse(tag.Substring(5));
+                                hijo.Checked = permisosDirectos.Contains(permId);
+                            }
                         }
-                        else if (tag.StartsWith("PERM_"))
-                        {
-                            int permId = int.Parse(tag.Substring(5));
-                            hijo.Checked = permisosDirectos.Contains(permId);
-                        }
-                    }
 
-                    // por si hay permisos anidados
-                    MarcarRecursivoPermisos(hijo, permisosDirectos);
+                        // por si hay permisos anidados
+                        MarcarRecursivoPermisos(hijo, permisosDirectos);
+                    }
                 }
+            }
+            finally
+            {
+                _suspendCheckEvents = false;
             }
         }
 
@@ -443,6 +463,35 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private void btnCancelar_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void TvPermisos_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            if (_suspendCheckEvents || e.Node == null)
+                return;
+
+            if (!e.Node.Checked)
+                return;
+
+            if (e.Node.Tag is string tag && tag.StartsWith("ROL_"))
+            {
+                _suspendCheckEvents = true;
+                try
+                {
+                    foreach (TreeNode raiz in tvPermisos.Nodes)
+                    {
+                        foreach (TreeNode hijo in raiz.Nodes)
+                        {
+                            if (!ReferenceEquals(hijo, e.Node) && hijo.Tag is string otroTag && otroTag.StartsWith("ROL_"))
+                                hijo.Checked = false;
+                        }
+                    }
+                }
+                finally
+                {
+                    _suspendCheckEvents = false;
+                }
+            }
         }
     }
 }

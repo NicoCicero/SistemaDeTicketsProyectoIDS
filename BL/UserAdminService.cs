@@ -25,14 +25,14 @@ namespace BL
 
         public List<Usuario> ListarUsuarios()
         {
-            if (!SessionManager.Instancia.TienePermiso("Usuario.Modificar"))
+            if (!PuedeConsultarUsuarios())
                 throw new UnauthorizedAccessException("No contás con permiso para listar usuarios.");
             return _repo.ListarUsuarios();
         }
 
         public List<Rol> ListarRoles()
         {
-            if (!SessionManager.Instancia.TienePermiso("Usuario.Modificar"))
+            if (!PuedeConsultarUsuarios())
                 throw new UnauthorizedAccessException("No contás con permiso para consultar roles.");
             return _repo.ListarRoles();
         }
@@ -220,6 +220,68 @@ namespace BL
 
         }
 
+        public void RestaurarCambio(ControlCambioEntry cambio)
+        {
+            if (cambio == null)
+                throw new ArgumentNullException(nameof(cambio));
+
+            var session = SessionManager.Instancia;
+            if (!session.TienePermiso("ControlCambios.Ver") || !session.TienePermiso("Usuario.Modificar"))
+                throw new UnauthorizedAccessException("No contás con permiso para restaurar cambios.");
+
+            if (!string.Equals(cambio.Entidad, "Usuario", StringComparison.OrdinalIgnoreCase))
+                throw new NotSupportedException("Solo se pueden restaurar cambios de usuarios desde este módulo.");
+
+            if (!string.Equals(cambio.Accion, "Modificacion", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Solo se pueden restaurar modificaciones.");
+
+            if (string.IsNullOrEmpty(cambio.Campo))
+                throw new InvalidOperationException("El registro seleccionado no especifica un campo a restaurar.");
+
+            var usuario = _usrRepo.GetById(cambio.EntidadId);
+            if (usuario == null)
+                throw new InvalidOperationException("Usuario no encontrado.");
+
+            switch (cambio.Campo)
+            {
+                case "Email":
+                    if (cambio.ValorAnterior == null)
+                        throw new InvalidOperationException("No hay un email previo para restaurar.");
+                    _repo.UpdateUsuario(cambio.EntidadId, cambio.ValorAnterior, usuario.Nombre, usuario.Activo);
+                    ActualizarDvUsuario(cambio.EntidadId);
+                    break;
+                case "Nombre":
+                    if (cambio.ValorAnterior == null)
+                        throw new InvalidOperationException("No hay un nombre previo para restaurar.");
+                    _repo.UpdateUsuario(cambio.EntidadId, usuario.Email, cambio.ValorAnterior, usuario.Activo);
+                    ActualizarDvUsuario(cambio.EntidadId);
+                    break;
+                case "Activo":
+                    if (!bool.TryParse(cambio.ValorAnterior, out bool activoAnterior))
+                        throw new InvalidOperationException("El estado anterior no es válido.");
+                    _repo.UpdateUsuario(cambio.EntidadId, usuario.Email, usuario.Nombre, activoAnterior);
+                    ActualizarDvUsuario(cambio.EntidadId);
+                    break;
+                case "Roles":
+                    var rolesPrevios = ParsearRoles(cambio.ValorAnterior);
+                    _repo.ReemplazarRolesUsuario(cambio.EntidadId, rolesPrevios);
+                    ActualizarDvRoles(cambio.EntidadId, rolesPrevios);
+                    break;
+                default:
+                    throw new NotSupportedException($"No es posible restaurar el campo '{cambio.Campo}'.");
+            }
+
+            _ccRepo.RegistrarCambio(
+                entidad: cambio.Entidad,
+                entidadId: cambio.EntidadId,
+                accion: "Restauracion",
+                campo: cambio.Campo,
+                valorAnterior: cambio.ValorNuevo,
+                valorNuevo: cambio.ValorAnterior,
+                usuarioId: session.UsuarioActual?.Id
+            );
+        }
+
         // =============== HELPERS ===============
 
         /// <summary>
@@ -246,6 +308,58 @@ namespace BL
                 valorNuevo: valorNuevo,
                 usuarioId: usuarioId
             );
+        }
+
+        private bool PuedeConsultarUsuarios()
+        {
+            var session = SessionManager.Instancia;
+            return session.TienePermiso("Usuario.Modificar")
+                || session.TienePermiso("Usuario.Alta")
+                || session.TienePermiso("Usuario.Baja")
+                || session.TienePermiso("Permiso.Gestionar");
+        }
+
+        private void ActualizarDvUsuario(int usuarioId)
+        {
+            var raw = new DAO.DvRawRepository();
+            var row = raw.SelectUsuarioByIdRaw(usuarioId);
+            if (row != null)
+            {
+                var dvh = VerificadorIntegridadService.Instancia.CalcularDVHUsuario(row);
+                raw.UpdateUsuarioDVH(usuarioId, dvh);
+            }
+
+            VerificadorIntegridadService.Instancia.RecalcularDVV_Usuario();
+        }
+
+        private void ActualizarDvRoles(int usuarioId, List<int> roles)
+        {
+            var raw = new DAO.DvRawRepository();
+            if (roles != null)
+            {
+                foreach (var rolId in roles)
+                {
+                    var dvh = HashHelper.Sha256($"{usuarioId}|{rolId}");
+                    raw.UpdateUsuarioRolDVH(usuarioId, rolId, dvh);
+                }
+            }
+
+            VerificadorIntegridadService.Instancia.RecalcularDVV_UsuarioRol();
+        }
+
+        private static List<int> ParsearRoles(string valorAnterior)
+        {
+            if (string.IsNullOrWhiteSpace(valorAnterior))
+                return new List<int>();
+
+            var lista = new List<int>();
+            var partes = valorAnterior.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var parte in partes)
+            {
+                if (int.TryParse(parte.Trim(), out int id))
+                    lista.Add(id);
+            }
+            return lista;
         }
         public void ActualizarRolesUsuario(int usuarioId, List<int> nuevosRoles)
         {
