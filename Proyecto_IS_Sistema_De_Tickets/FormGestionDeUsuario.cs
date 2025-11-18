@@ -309,10 +309,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 txtConfirmarContraseña.UseSystemPasswordChar = !ver;
             };
             // Mostrar/ocultar según rol
-            var puedeCrear = SessionManager.Instancia.UsuarioActual.TienePermiso("Usuario.Alta");
-            this.Text = puedeCrear
-                ? "Gestión de Usuarios - Puede crear usuarios"
-                : "Gestión de Usuarios - Solo lectura";
+            //var puedeCrear = SessionManager.Instancia.UsuarioActual.TienePermiso("Usuario.Alta");
+            //this.Text = puedeCrear
+            //    ? "Gestión de Usuarios - Puede crear usuarios"
+            //    : "Gestión de Usuarios - Solo lectura";
 
             
 
