@@ -796,7 +796,13 @@ namespace Proyecto_IS_Sistema_De_Tickets
             if (tag.StartsWith("ROL_"))
             {
                 int rolId = int.Parse(tag.Substring(4));
-                new DAO.UsuarioAdminRepository().ReemplazarRolesUsuario(usuarioId, new[] { rolId });
+                var usuarioRepo = new DAO.UsuarioRepository();
+                var rolesActuales = usuarioRepo.GetRoles(usuarioId).Select(r => r.Id).ToList();
+
+                if (!rolesActuales.Contains(rolId))
+                    rolesActuales.Add(rolId);
+
+                BL.UserAdminService.Instancia.ActualizarRolesUsuario(usuarioId, rolesActuales);
             }
             else if (tag.StartsWith("PERM_"))
             {
