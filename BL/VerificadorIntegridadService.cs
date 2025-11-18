@@ -16,6 +16,7 @@ namespace BL
 
         private readonly DvRawRepository _raw = new DvRawRepository();
         private readonly DvvRepository _dvvRepo = new DvvRepository();
+        private readonly ControlCambiosRepository _ccRepo = new ControlCambiosRepository();
 
         private VerificadorIntegridadService() { }
 
@@ -125,7 +126,11 @@ namespace BL
                 var calc = CalcularDVHUsuario(r);
                 var db = r["DVH"] as string ?? "";
                 if (!string.Equals(calc, db, StringComparison.OrdinalIgnoreCase))
-                    problemas.Add($"Usuario_Id={r.Field<int>("Usuario_Id")} DVH inválido");
+                {
+                    int id = r.Field<int>("Usuario_Id");
+                    problemas.Add($"Usuario_Id={id} DVH inválido");
+                    RegistrarAlertaIntegridad("Usuario", id, "DVH", db, calc);
+                }
             }
             var sumU = "Usuario";
             foreach (DataRow r in tU.Rows)
@@ -138,6 +143,7 @@ namespace BL
             if (sumU.CompareTo(dvv) != 0)
             {
                 problemas.Add("DVV(Usuario) inválido");
+                RegistrarAlertaIntegridad("Usuario", 0, "DVV", dvv, sumU);
             }
 
             // UsuarioRol
@@ -148,7 +154,12 @@ namespace BL
                 var calc = CalcularDVHUsuarioRol(r);
                 var db = r["DVH"] as string ?? "";
                 if (!string.Equals(calc, db, StringComparison.OrdinalIgnoreCase))
-                    problemas.Add($"UsuarioRol (U={r.Field<int>("Usuario_Id")},R={r.Field<int>("Rol_Id")}) DVH inválido");
+                {
+                    int uid = r.Field<int>("Usuario_Id");
+                    int rid = r.Field<int>("Rol_Id");
+                    problemas.Add($"UsuarioRol (U={uid},R={rid}) DVH inválido");
+                    RegistrarAlertaIntegridad("UsuarioRol", uid, $"DVH(Rol={rid})", db, calc);
+                }
             }
             var sumUR = "UsuarioRol";
             foreach (DataRow r in tUR.Rows)
@@ -160,7 +171,10 @@ namespace BL
             dvv = _dvvRepo.Get("UsuarioRol");
 
             if (sumUR.CompareTo(dvv) != 0)
+            {
                 problemas.Add("DVV(UsuarioRol) inválido");
+                RegistrarAlertaIntegridad("UsuarioRol", 0, "DVV", dvv, sumUR);
+            }
 
             // UsuarioPermiso
             var tUP = _raw.SelectTabla("UsuarioPermiso");
@@ -169,7 +183,12 @@ namespace BL
                 var calc = CalcularDVHUsuarioPermiso(r);
                 var db = r["DVH"] as string ?? "";
                 if (!string.Equals(calc, db, StringComparison.OrdinalIgnoreCase))
-                    problemas.Add($"UsuarioPermiso (U={r.Field<int>("Usuario_Id")},P={r.Field<int>("Permiso_Id")}) DVH inválido");
+                {
+                    int uid = r.Field<int>("Usuario_Id");
+                    int pid = r.Field<int>("Permiso_Id");
+                    problemas.Add($"UsuarioPermiso (U={uid},P={pid}) DVH inválido");
+                    RegistrarAlertaIntegridad("UsuarioPermiso", uid, $"DVH(Permiso={pid})", db, calc);
+                }
             }
             var sumUP = "UsuarioPermiso";
             foreach (DataRow r in tUP.Rows)
@@ -180,9 +199,25 @@ namespace BL
             dvv = _dvvRepo.Get("UsuarioPermiso");
 
             if (sumUP.CompareTo(dvv) != 0)
+            {
                 problemas.Add("DVV(UsuarioPermiso) inválido");
+                RegistrarAlertaIntegridad("UsuarioPermiso", 0, "DVV", dvv, sumUP);
+            }
 
             return (problemas.Count == 0, string.Join(Environment.NewLine, problemas));
+        }
+
+        private void RegistrarAlertaIntegridad(string entidad, int entidadId, string campo, string valorAnterior, string valorNuevo)
+        {
+            _ccRepo.RegistrarCambio(
+                entidad: entidad,
+                entidadId: entidadId,
+                accion: "Integridad",
+                campo: campo,
+                valorAnterior: valorAnterior,
+                valorNuevo: valorNuevo,
+                usuarioId: SessionManager.Instancia.UsuarioActual?.Id
+            );
         }
     }
 }

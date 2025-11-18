@@ -64,6 +64,7 @@
     <Compile Include="FormPrueba.Designer.cs">
       <DependentUpon>FormPrueba.cs</DependentUpon>
     </Compile>
+    <Compile Include="PermisoTreeHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FormGestionDeUsuario.resx">

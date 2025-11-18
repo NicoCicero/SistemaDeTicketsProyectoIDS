@@ -42,7 +42,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
             }
 
             var usuario = SessionManager.Instancia.UsuarioActual;
-            bool puedeGestionarUsuarios = SessionManager.Instancia.TienePermiso("Usuario.Modificar");
+            bool puedeAltaUsuarios = SessionManager.Instancia.TienePermiso("Usuario.Alta");
+            bool puedeBajaUsuarios = SessionManager.Instancia.TienePermiso("Usuario.Baja");
+            bool puedeModificarUsuarios = SessionManager.Instancia.TienePermiso("Usuario.Modificar");
+            bool puedeVerUsuarios = puedeAltaUsuarios || puedeBajaUsuarios || puedeModificarUsuarios;
             bool puedeVerBitacora = SessionManager.Instancia.TienePermiso("Bitacora.Ver");
             bool puedeVerCambios = SessionManager.Instancia.TienePermiso("ControlCambios.Ver");
             bool puedeCrearTicket = usuario.TienePermiso("Ticket.Crear");
@@ -71,10 +74,11 @@ namespace Proyecto_IS_Sistema_De_Tickets
             _tabBitacora = tabGeneral.TabPages.Count > 2 ? tabGeneral.TabPages[2] : null;
             _tabCambios = tabGeneral.TabPages.Count > 3 ? tabGeneral.TabPages[3] : null;
 
-            if (puedeGestionarUsuarios)
+            if (puedeVerUsuarios)
             {
                 SetRegistrarVisible(true);
                 CargarGrillaGestionUsuarios();
+                ActualizarBotonesGestionUsuarios(puedeAltaUsuarios, puedeModificarUsuarios, puedeBajaUsuarios);
 
                 if (puedeVerBitacora)
                 {
@@ -109,6 +113,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
             // disparo el idioma por defecto para que todos los forms se pinten
 
             treeUsuarios.AfterSelect += treeUsuarios_AfterSelect_1;
+            dgvCambios.CellDoubleClick += dgvCambios_CellDoubleClick;
 
             dgvGestionUsuario.AllowUserToAddRows = false;
             dgvGestionUsuario.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -167,7 +172,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         private void TabGeneral_SelectedIndexChanged(object sender, EventArgs e)
         {
-            bool puedeGestionarUsuarios = SessionManager.Instancia.TienePermiso("Usuario.Modificar");
+            bool puedeAltaUsuarios = SessionManager.Instancia.TienePermiso("Usuario.Alta");
+            bool puedeBajaUsuarios = SessionManager.Instancia.TienePermiso("Usuario.Baja");
+            bool puedeModificarUsuarios = SessionManager.Instancia.TienePermiso("Usuario.Modificar");
+            bool puedeVerUsuarios = puedeAltaUsuarios || puedeBajaUsuarios || puedeModificarUsuarios;
             bool puedeVerBitacora = SessionManager.Instancia.TienePermiso("Bitacora.Ver");
             bool puedeVerCambios = SessionManager.Instancia.TienePermiso("ControlCambios.Ver");
 
@@ -178,7 +186,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
                     break;
 
                 case 1: // 👤 Registrar usuarios
-                    if (!puedeGestionarUsuarios)
+                    if (!puedeVerUsuarios)
                     {
                         MessageBox.Show("No contás con permiso para gestionar usuarios.");
                         tabGeneral.SelectedIndex = 0; // vuelve al menú
@@ -187,6 +195,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
                     // Si es admin, mostramos y refrescamos la grilla
                     SetRegistrarVisible(true);
+                    ActualizarBotonesGestionUsuarios(puedeAltaUsuarios, puedeModificarUsuarios, puedeBajaUsuarios);
                     CargarGrillaGestionUsuarios();
                     break;
 
@@ -260,35 +269,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private void CargarPermisosEnTreeView(TreeView tree)
         {
             if (tree == null) return;
-
-            tree.BeginUpdate();
-            tree.Nodes.Clear();
-
             var servicio = PermisoService.Instancia;
             var arbol = servicio.ObtenerArbolPermisos();
-
-            foreach (var permiso in arbol)
-            {
-                tree.Nodes.Add(CrearNodoTree(permiso));
-            }
-
-            tree.EndUpdate();
-            tree.ExpandAll();
-        }
-
-        private TreeNode CrearNodoTree(PermisoNodo permiso)
-        {
-            var nodo = new TreeNode(permiso.Nombre)
-            {
-                Tag = permiso.Id   // Guardamos el Permiso_Id aquí
-            };
-
-            foreach (var hijo in permiso.Hijos)
-            {
-                nodo.Nodes.Add(CrearNodoTree(hijo));
-            }
-
-            return nodo;
+            PermisoTreeHelper.PoblarTree(tree, arbol, id => id);
         }
 
         private void CargarBitacoraInicial()
@@ -321,6 +304,14 @@ namespace Proyecto_IS_Sistema_De_Tickets
             dgvGestionUsuario.Visible = v;
             btnActualizar.Visible = v;
             btnNuevoRegistro.Visible = v;
+            btnEliminar.Visible = v;
+        }
+
+        private void ActualizarBotonesGestionUsuarios(bool puedeAlta, bool puedeModificar, bool puedeBaja)
+        {
+            btnNuevoRegistro.Enabled = puedeAlta;
+            btnActualizar.Enabled = puedeModificar;
+            btnEliminar.Enabled = puedeBaja;
         }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -444,6 +435,12 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         private void btnActualizar_Click(object sender, EventArgs e)
         {
+            if (!SessionManager.Instancia.TienePermiso("Usuario.Modificar"))
+            {
+                MessageBox.Show("No contás con permiso para modificar usuarios.");
+                return;
+            }
+
             if (dgvGestionUsuario.CurrentRow == null || dgvGestionUsuario.CurrentRow.Index < 0)
             {
                 MessageBox.Show("Seleccioná un usuario primero.");
@@ -476,6 +473,12 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         private void btnNuevoRegistro_Click(object sender, EventArgs e)
         {
+            if (!SessionManager.Instancia.TienePermiso("Usuario.Alta"))
+            {
+                MessageBox.Show("No contás con permiso para crear usuarios.");
+                return;
+            }
+
             var f = new FormGestionDeUsuario(
                FormGestionDeUsuario.ModoFormulario.Alta,
                usuarioId: null);
@@ -527,6 +530,57 @@ namespace Proyecto_IS_Sistema_De_Tickets
             dtpCambiosHasta.Value = DateTime.Today.AddDays(1);
 
             CargarCambiosInicial();
+        }
+
+        private void dgvCambios_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || dgvCambios.Rows.Count == 0)
+                return;
+
+            var row = dgvCambios.Rows[e.RowIndex];
+            if (row?.DataBoundItem is ControlCambioEntry cambio)
+            {
+                if (!string.Equals(cambio.Entidad, "Usuario", StringComparison.OrdinalIgnoreCase))
+                {
+                    MessageBox.Show("Solo se pueden restaurar cambios de usuarios desde este apartado.");
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(cambio.Campo))
+                {
+                    MessageBox.Show("El registro seleccionado no indica un campo para restaurar.");
+                    return;
+                }
+
+                if (cambio.ValorAnterior == null && cambio.ValorNuevo == null)
+                {
+                    MessageBox.Show("No hay un valor anterior para restaurar en este registro.");
+                    return;
+                }
+
+                var confirmar = MessageBox.Show(
+                    $"¿Restaurar el campo '{cambio.Campo}' del usuario {cambio.EntidadId} al valor anterior?",
+                    "Restaurar cambio",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (confirmar != DialogResult.Yes)
+                    return;
+
+                try
+                {
+                    BL.UserAdminService.Instancia.RestaurarCambio(cambio);
+                    MessageBox.Show("El valor fue restaurado correctamente.");
+                    btnFiltrarCambios_Click(btnFiltrarCambios, EventArgs.Empty);
+
+                    if (tabGeneral.TabPages.Contains(tabUsuarios))
+                        CargarGrillaGestionUsuarios();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("No se pudo restaurar el cambio: " + ex.Message);
+                }
+            }
         }
         private void ConfigurarDgvCambios()
         {
@@ -657,7 +711,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
                     foreach (var comp in permisosDelRol)    // puede haber 1 o varios "árboles" raíz
                     {
-                        nodoRol.Nodes.Add(CrearNodoTreeDesdePermiso(comp));
+                        nodoRol.Nodes.Add(PermisoTreeHelper.CrearNodo(comp));
                     }
 
                     nodoRoles.Nodes.Add(nodoRol);
@@ -675,7 +729,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 {
                     foreach (var p in permisosSueltos)
                     {
-                        nodoPermisos.Nodes.Add(CrearNodoTreeDesdePermiso(p));
+                        nodoPermisos.Nodes.Add(PermisoTreeHelper.CrearNodo(p));
                     }
                 }
 
@@ -687,20 +741,6 @@ namespace Proyecto_IS_Sistema_De_Tickets
             treeUsuarios.ExpandAll();
         }
         
-
-        private TreeNode CrearNodoTreeDesdePermiso(BE.PermisoComponent permiso)
-        {
-            var nodo = new TreeNode(permiso.Nombre)
-            {
-                Tag = "PERM_" + permiso.Id
-            };
-            if (permiso is BE.PermisoCompuesto compuesto)
-            {
-                foreach (var hijo in compuesto.Hijos)
-                    nodo.Nodes.Add(CrearNodoTreeDesdePermiso(hijo));
-            }
-            return nodo;
-        }
 
         private void CargarRolesYPermisosDisponibles()
         {
@@ -718,18 +758,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
             var permisos = BL.PermisoService.Instancia.ObtenerArbolPermisos();
             var nodoPermisos = new TreeNode("Permisos disponibles");
             foreach (var p in permisos)
-                nodoPermisos.Nodes.Add(CrearNodoTreeDesdeNodo(p));
+                nodoPermisos.Nodes.Add(PermisoTreeHelper.CrearNodo(p));
 
             treeDisponibles.Nodes.Add(nodoPermisos);
             treeDisponibles.ExpandAll();
-        }
-
-        private TreeNode CrearNodoTreeDesdeNodo(BE.PermisoNodo nodo)
-        {
-            var tn = new TreeNode(nodo.Nombre) { Tag = "PERM_" + nodo.Id };
-            foreach (var hijo in nodo.Hijos)
-                tn.Nodes.Add(CrearNodoTreeDesdeNodo(hijo));
-            return tn;
         }
 
         private void btnAsignar_Click(object sender, EventArgs e)
@@ -836,6 +868,12 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         private void btnEliminar_Click(object sender, EventArgs e)
         {
+            if (!SessionManager.Instancia.TienePermiso("Usuario.Baja"))
+            {
+                MessageBox.Show("No contás con permiso para eliminar usuarios.");
+                return;
+            }
+
             if (dgvGestionUsuario.CurrentRow == null)
             {
                 MessageBox.Show("Seleccioná un usuario primero.");
