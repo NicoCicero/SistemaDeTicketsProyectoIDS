@@ -1,6 +1,5 @@
 ﻿using BE;
 using BL;
-using DAO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -807,8 +806,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
             if (tag.StartsWith("ROL_"))
             {
                 int rolId = int.Parse(tag.Substring(4));
-                var usuarioRepo = new DAO.UsuarioRepository();
-                var rolesActuales = usuarioRepo.GetRoles(usuarioId).Select(r => r.Id).ToList();
+                var rolesActuales = UserAdminService.Instancia
+                    .ObtenerUsuarioCompleto(usuarioId)?.Roles?
+                    .Select(r => r.Id)
+                    .ToList() ?? new List<int>();
 
                 if (rolesActuales.Count == 1 && rolesActuales[0] == rolId)
                 {
@@ -862,9 +863,13 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 int rolId = int.Parse(tag.Substring(4));
 
                 // obtenemos los roles actuales y removemos este
-                var usuarioRepo = new DAO.UsuarioRepository();
-                var rolesActuales = usuarioRepo.GetRoles(usuarioId);
-                var nuevosRoles = rolesActuales.Where(r => r.Id != rolId).Select(r => r.Id).ToList();
+                var rolesActuales = UserAdminService.Instancia
+                    .ObtenerUsuarioCompleto(usuarioId)?.Roles?
+                    .ToList() ?? new List<Rol>();
+                var nuevosRoles = rolesActuales
+                    .Where(r => r.Id != rolId)
+                    .Select(r => r.Id)
+                    .ToList();
 
                 if (nuevosRoles.Count == 0)
                 {
