@@ -374,7 +374,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
             int? rolPrincipal = rolesUsuario.Any() ? (int?)rolesUsuario.First() : null;
 
             // permisos directos del usuario (si tenés tabla UsuarioPermiso)
-            var permisosDirectos = new DAO.UsuarioPermisoRepository().GetPermisosDirectos(usuarioId).Select(p => p.Id).ToHashSet();
+            var permisosDirectos = PermisoService.Instancia
+                .ObtenerPermisosDirectosDeUsuario(usuarioId)
+                ?.Select(p => p.Id)
+                .ToHashSet() ?? new HashSet<int>();
 
             _suspendCheckEvents = true;
             try
