@@ -37,19 +37,6 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabGeneral = new System.Windows.Forms.TabControl();
             this.tabMenuPrincipal = new System.Windows.Forms.TabPage();
             this.cmbIdiomas = new System.Windows.Forms.ComboBox();
-            this.tabIdiomas = new System.Windows.Forms.TabPage();
-            this.rbtnIdiomaInactivo = new System.Windows.Forms.RadioButton();
-            this.rbtnIdiomaActivo = new System.Windows.Forms.RadioButton();
-            this.btnQuitarTraduccion = new System.Windows.Forms.Button();
-            this.btnAgregarTraduccion = new System.Windows.Forms.Button();
-            this.txtAgregarTraduccion = new System.Windows.Forms.TextBox();
-            this.btnQuitarIdioma = new System.Windows.Forms.Button();
-            this.btnAgregarIdioma = new System.Windows.Forms.Button();
-            this.txtAgregarIdioma = new System.Windows.Forms.TextBox();
-            this.dgvListarTraduccion = new System.Windows.Forms.DataGridView();
-            this.dgvListarIdiomas = new System.Windows.Forms.DataGridView();
-            this.lblTraduccion = new System.Windows.Forms.Label();
-            this.lblNuevoIdioma = new System.Windows.Forms.Label();
             this.tabUsuarios = new System.Windows.Forms.TabPage();
             this.btnEliminar = new System.Windows.Forms.Button();
             this.btnNuevoRegistro = new System.Windows.Forms.Button();
@@ -98,7 +85,6 @@ namespace Proyecto_IS_Sistema_De_Tickets
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             this.tabGeneral.SuspendLayout();
             this.tabMenuPrincipal.SuspendLayout();
-            this.tabIdiomas.SuspendLayout();
             this.tabUsuarios.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvGestionUsuario)).BeginInit();
             this.tabBitacora.SuspendLayout();
@@ -106,8 +92,6 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabControlCambios.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCambios)).BeginInit();
             this.tabPermisos.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvListarTraduccion)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvListarIdiomas)).BeginInit();
             this.SuspendLayout();
             // 
             // btnCerrarSesion
@@ -126,11 +110,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
             // 
             // tabGeneral
             // 
-            this.tabGeneral.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.tabGeneral.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabGeneral.Controls.Add(this.tabMenuPrincipal);
-            this.tabGeneral.Controls.Add(this.tabIdiomas);
             this.tabGeneral.Controls.Add(this.tabUsuarios);
             this.tabGeneral.Controls.Add(this.tabBitacora);
             this.tabGeneral.Controls.Add(this.tabControlCambios);
@@ -154,170 +137,18 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabMenuPrincipal.TabIndex = 2;
             this.tabMenuPrincipal.Text = "Menu Principal";
             this.tabMenuPrincipal.UseVisualStyleBackColor = true;
-            //
+            // 
             // cmbIdiomas
-            //
+            // 
             this.cmbIdiomas.FormattingEnabled = true;
             this.cmbIdiomas.Location = new System.Drawing.Point(616, 5);
             this.cmbIdiomas.Name = "cmbIdiomas";
             this.cmbIdiomas.Size = new System.Drawing.Size(139, 21);
             this.cmbIdiomas.TabIndex = 0;
             this.cmbIdiomas.SelectedIndexChanged += new System.EventHandler(this.cmbIdiomas_SelectedIndexChanged);
-            //
-            // tabIdiomas
-            //
-            this.tabIdiomas.Controls.Add(this.rbtnIdiomaInactivo);
-            this.tabIdiomas.Controls.Add(this.rbtnIdiomaActivo);
-            this.tabIdiomas.Controls.Add(this.btnQuitarTraduccion);
-            this.tabIdiomas.Controls.Add(this.btnAgregarTraduccion);
-            this.tabIdiomas.Controls.Add(this.txtAgregarTraduccion);
-            this.tabIdiomas.Controls.Add(this.btnQuitarIdioma);
-            this.tabIdiomas.Controls.Add(this.btnAgregarIdioma);
-            this.tabIdiomas.Controls.Add(this.txtAgregarIdioma);
-            this.tabIdiomas.Controls.Add(this.dgvListarTraduccion);
-            this.tabIdiomas.Controls.Add(this.dgvListarIdiomas);
-            this.tabIdiomas.Controls.Add(this.lblTraduccion);
-            this.tabIdiomas.Controls.Add(this.lblNuevoIdioma);
-            this.tabIdiomas.Location = new System.Drawing.Point(4, 22);
-            this.tabIdiomas.Name = "tabIdiomas";
-            this.tabIdiomas.Padding = new System.Windows.Forms.Padding(2);
-            this.tabIdiomas.Size = new System.Drawing.Size(760, 383);
-            this.tabIdiomas.TabIndex = 5;
-            this.tabIdiomas.Text = "Idiomas";
-            this.tabIdiomas.UseVisualStyleBackColor = true;
-            //
-            // rbtnIdiomaInactivo
-            //
-            this.rbtnIdiomaInactivo.AutoSize = true;
-            this.rbtnIdiomaInactivo.Location = new System.Drawing.Point(120, 61);
-            this.rbtnIdiomaInactivo.Name = "rbtnIdiomaInactivo";
-            this.rbtnIdiomaInactivo.Size = new System.Drawing.Size(63, 17);
-            this.rbtnIdiomaInactivo.TabIndex = 12;
-            this.rbtnIdiomaInactivo.TabStop = true;
-            this.rbtnIdiomaInactivo.Text = "Inactivo";
-            this.rbtnIdiomaInactivo.UseVisualStyleBackColor = true;
-            this.rbtnIdiomaInactivo.CheckedChanged += new System.EventHandler(this.rbtnIdiomaInactivo_CheckedChanged);
-            //
-            // rbtnIdiomaActivo
-            //
-            this.rbtnIdiomaActivo.AutoSize = true;
-            this.rbtnIdiomaActivo.Location = new System.Drawing.Point(21, 61);
-            this.rbtnIdiomaActivo.Name = "rbtnIdiomaActivo";
-            this.rbtnIdiomaActivo.Size = new System.Drawing.Size(55, 17);
-            this.rbtnIdiomaActivo.TabIndex = 11;
-            this.rbtnIdiomaActivo.TabStop = true;
-            this.rbtnIdiomaActivo.Text = "Activo";
-            this.rbtnIdiomaActivo.UseVisualStyleBackColor = true;
-            this.rbtnIdiomaActivo.CheckedChanged += new System.EventHandler(this.rbtnIdiomaActivo_CheckedChanged);
-            //
-            // btnQuitarTraduccion
-            //
-            this.btnQuitarTraduccion.Location = new System.Drawing.Point(614, 53);
-            this.btnQuitarTraduccion.Name = "btnQuitarTraduccion";
-            this.btnQuitarTraduccion.Size = new System.Drawing.Size(129, 23);
-            this.btnQuitarTraduccion.TabIndex = 10;
-            this.btnQuitarTraduccion.Text = "Quitar Traducción";
-            this.btnQuitarTraduccion.UseVisualStyleBackColor = true;
-            this.btnQuitarTraduccion.Click += new System.EventHandler(this.btnQuitarTraduccion_Click);
-            //
-            // btnAgregarTraduccion
-            //
-            this.btnAgregarTraduccion.Location = new System.Drawing.Point(614, 24);
-            this.btnAgregarTraduccion.Name = "btnAgregarTraduccion";
-            this.btnAgregarTraduccion.Size = new System.Drawing.Size(129, 23);
-            this.btnAgregarTraduccion.TabIndex = 9;
-            this.btnAgregarTraduccion.Text = "Agregar Traducción";
-            this.btnAgregarTraduccion.UseVisualStyleBackColor = true;
-            this.btnAgregarTraduccion.Click += new System.EventHandler(this.btnAgregarTraduccion_Click);
-            //
-            // txtAgregarTraduccion
-            //
-            this.txtAgregarTraduccion.Location = new System.Drawing.Point(404, 30);
-            this.txtAgregarTraduccion.Name = "txtAgregarTraduccion";
-            this.txtAgregarTraduccion.Size = new System.Drawing.Size(190, 20);
-            this.txtAgregarTraduccion.TabIndex = 8;
-            //
-            // btnQuitarIdioma
-            //
-            this.btnQuitarIdioma.Location = new System.Drawing.Point(293, 24);
-            this.btnQuitarIdioma.Name = "btnQuitarIdioma";
-            this.btnQuitarIdioma.Size = new System.Drawing.Size(107, 23);
-            this.btnQuitarIdioma.TabIndex = 7;
-            this.btnQuitarIdioma.Text = "Quitar Idioma";
-            this.btnQuitarIdioma.UseVisualStyleBackColor = true;
-            this.btnQuitarIdioma.Click += new System.EventHandler(this.btnQuitarIdioma_Click);
-            //
-            // btnAgregarIdioma
-            //
-            this.btnAgregarIdioma.Location = new System.Drawing.Point(182, 24);
-            this.btnAgregarIdioma.Name = "btnAgregarIdioma";
-            this.btnAgregarIdioma.Size = new System.Drawing.Size(105, 23);
-            this.btnAgregarIdioma.TabIndex = 6;
-            this.btnAgregarIdioma.Text = "Agregar Idioma";
-            this.btnAgregarIdioma.UseVisualStyleBackColor = true;
-            this.btnAgregarIdioma.Click += new System.EventHandler(this.btnAgregarIdioma_Click);
-            //
-            // txtAgregarIdioma
-            //
-            this.txtAgregarIdioma.Location = new System.Drawing.Point(21, 26);
-            this.txtAgregarIdioma.Name = "txtAgregarIdioma";
-            this.txtAgregarIdioma.Size = new System.Drawing.Size(155, 20);
-            this.txtAgregarIdioma.TabIndex = 5;
-            //
-            // dgvListarTraduccion
-            //
-            this.dgvListarTraduccion.AllowUserToAddRows = false;
-            this.dgvListarTraduccion.AllowUserToDeleteRows = false;
-            this.dgvListarTraduccion.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgvListarTraduccion.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvListarTraduccion.Location = new System.Drawing.Point(404, 82);
-            this.dgvListarTraduccion.MultiSelect = false;
-            this.dgvListarTraduccion.Name = "dgvListarTraduccion";
-            this.dgvListarTraduccion.ReadOnly = true;
-            this.dgvListarTraduccion.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvListarTraduccion.Size = new System.Drawing.Size(339, 286);
-            this.dgvListarTraduccion.TabIndex = 4;
-            this.dgvListarTraduccion.SelectionChanged += new System.EventHandler(this.dgvListarTraduccion_SelectionChanged);
-            //
-            // dgvListarIdiomas
-            //
-            this.dgvListarIdiomas.AllowUserToAddRows = false;
-            this.dgvListarIdiomas.AllowUserToDeleteRows = false;
-            this.dgvListarIdiomas.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgvListarIdiomas.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvListarIdiomas.Location = new System.Drawing.Point(21, 82);
-            this.dgvListarIdiomas.MultiSelect = false;
-            this.dgvListarIdiomas.Name = "dgvListarIdiomas";
-            this.dgvListarIdiomas.ReadOnly = true;
-            this.dgvListarIdiomas.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvListarIdiomas.Size = new System.Drawing.Size(332, 286);
-            this.dgvListarIdiomas.TabIndex = 3;
-            this.dgvListarIdiomas.SelectionChanged += new System.EventHandler(this.dgvListarIdiomas_SelectionChanged);
-            //
-            // lblTraduccion
-            //
-            this.lblTraduccion.AutoSize = true;
-            this.lblTraduccion.Location = new System.Drawing.Point(401, 11);
-            this.lblTraduccion.Name = "lblTraduccion";
-            this.lblTraduccion.Size = new System.Drawing.Size(66, 13);
-            this.lblTraduccion.TabIndex = 1;
-            this.lblTraduccion.Text = "Traducción";
-            //
-            // lblNuevoIdioma
-            //
-            this.lblNuevoIdioma.AutoSize = true;
-            this.lblNuevoIdioma.Location = new System.Drawing.Point(18, 11);
-            this.lblNuevoIdioma.Name = "lblNuevoIdioma";
-            this.lblNuevoIdioma.Size = new System.Drawing.Size(71, 13);
-            this.lblNuevoIdioma.TabIndex = 0;
-            this.lblNuevoIdioma.Text = "Nuevo idioma";
-            //
+            // 
             // tabUsuarios
-            //
+            // 
             this.tabUsuarios.Controls.Add(this.btnEliminar);
             this.tabUsuarios.Controls.Add(this.btnNuevoRegistro);
             this.tabUsuarios.Controls.Add(this.btnActualizar);
@@ -794,12 +625,8 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabControlCambios.ResumeLayout(false);
             this.tabControlCambios.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCambios)).EndInit();
-            this.tabIdiomas.ResumeLayout(false);
-            this.tabIdiomas.PerformLayout();
             this.tabPermisos.ResumeLayout(false);
             this.tabPermisos.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvListarTraduccion)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvListarIdiomas)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -863,18 +690,5 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private System.Windows.Forms.TreeView treeDisponibles;
         private Button btnEliminar;
         private Button button1;
-        private System.Windows.Forms.TabPage tabIdiomas;
-        private System.Windows.Forms.RadioButton rbtnIdiomaInactivo;
-        private System.Windows.Forms.RadioButton rbtnIdiomaActivo;
-        private System.Windows.Forms.Button btnQuitarTraduccion;
-        private System.Windows.Forms.Button btnAgregarTraduccion;
-        private System.Windows.Forms.TextBox txtAgregarTraduccion;
-        private System.Windows.Forms.Button btnQuitarIdioma;
-        private System.Windows.Forms.Button btnAgregarIdioma;
-        private System.Windows.Forms.TextBox txtAgregarIdioma;
-        private System.Windows.Forms.DataGridView dgvListarTraduccion;
-        private System.Windows.Forms.DataGridView dgvListarIdiomas;
-        private System.Windows.Forms.Label lblTraduccion;
-        private System.Windows.Forms.Label lblNuevoIdioma;
     }
 }
