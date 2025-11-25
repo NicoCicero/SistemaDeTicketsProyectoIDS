@@ -21,6 +21,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         private bool _registroVisible = false;   // estado del bloque de registro
         private bool _regRolesCargados = false;  // ya lo tenés: lo dejamos
+        private bool _actualizandoEstadoIdioma = false;
 
         private TabPage _tabRegistrar;
         private TabPage _tabBitacora;
@@ -35,6 +36,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private void FormPrueba_Load(object sender, EventArgs e)
         {
             ConfigurarDgvCambios();
+            ConfigurarTabIdiomas();
             IdiomaManager.Instancia.Suscribir(this);
             if (SessionManager.Instancia.UsuarioActual == null)
             {
@@ -102,18 +104,8 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 SetRegistrarVisible(false);
             }
 
-            var idiomas = _idiomaSrv.ListarIdiomas();
-            cmbIdiomas.DataSource = idiomas;
-            cmbIdiomas.DisplayMember = "Nombre";
-            cmbIdiomas.ValueMember = "Codigo";
-
-            var codActual = IdiomaManager.Instancia.CodigoActual;
-            if (!string.IsNullOrWhiteSpace(codActual) && idiomas.Any(i => i.Codigo == codActual))
-                cmbIdiomas.SelectedValue = codActual;
-            else
-                cmbIdiomas.SelectedValue = idiomas.FirstOrDefault(i => i.EsPorDefecto)?.Codigo ?? idiomas.First().Codigo;
-
-            // disparo el idioma por defecto para que todos los forms se pinten
+            CargarIdiomasTab();
+            RecargarComboIdiomas();
 
             treeUsuarios.AfterSelect += treeUsuarios_AfterSelect_1;
             dgvCambios.CellDoubleClick += dgvCambios_CellDoubleClick;
@@ -912,6 +904,247 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 foreach (var hijo in compuesto.Hijos)
                     AplanarPermisos(hijo, destino);
             }
+        }
+
+        private void ConfigurarTabIdiomas()
+        {
+            dgvListarIdiomas.AutoGenerateColumns = true;
+            dgvListarTraduccion.AutoGenerateColumns = true;
+            dgvListarIdiomas.MultiSelect = false;
+            dgvListarTraduccion.MultiSelect = false;
+        }
+
+        private void RecargarComboIdiomas()
+        {
+            var idiomas = _idiomaSrv.ListarIdiomasActivos();
+            var codActual = IdiomaManager.Instancia.CodigoActual;
+
+            cmbIdiomas.DataSource = idiomas;
+            cmbIdiomas.DisplayMember = "Nombre";
+            cmbIdiomas.ValueMember = "Codigo";
+
+            if (!string.IsNullOrWhiteSpace(codActual) && idiomas.Any(i => i.Codigo == codActual))
+                cmbIdiomas.SelectedValue = codActual;
+            else if (idiomas.Any())
+                cmbIdiomas.SelectedValue = idiomas.FirstOrDefault(i => i.EsPorDefecto)?.Codigo ?? idiomas.First().Codigo;
+        }
+
+        private void CargarIdiomasTab(int? idSeleccionar = null)
+        {
+            var idiomas = _idiomaSrv.ListarIdiomas();
+            dgvListarIdiomas.DataSource = idiomas;
+
+            if (idiomas.Count == 0)
+            {
+                dgvListarTraduccion.DataSource = null;
+                txtAgregarTraduccion.Clear();
+                _actualizandoEstadoIdioma = true;
+                rbtnIdiomaActivo.Checked = false;
+                rbtnIdiomaInactivo.Checked = false;
+                _actualizandoEstadoIdioma = false;
+                return;
+            }
+
+            int idABuscar = idSeleccionar ?? idiomas.First().Id;
+            SeleccionarIdiomaEnGrilla(idABuscar);
+        }
+
+        private void SeleccionarIdiomaEnGrilla(int idIdioma)
+        {
+            foreach (DataGridViewRow row in dgvListarIdiomas.Rows)
+            {
+                if (row.DataBoundItem is Idioma idioma && idioma.Id == idIdioma)
+                {
+                    row.Selected = true;
+                    dgvListarIdiomas.CurrentCell = row.Cells[0];
+                    return;
+                }
+            }
+
+            if (dgvListarIdiomas.Rows.Count > 0)
+            {
+                dgvListarIdiomas.Rows[0].Selected = true;
+                dgvListarIdiomas.CurrentCell = dgvListarIdiomas.Rows[0].Cells[0];
+            }
+        }
+
+        private void CargarTraduccionesParaIdioma(int idIdioma, int? idEtiqueta = null)
+        {
+            if (idIdioma <= 0)
+            {
+                dgvListarTraduccion.DataSource = null;
+                txtAgregarTraduccion.Clear();
+                return;
+            }
+
+            var traducciones = _idiomaSrv.ListarEtiquetasConTraduccion(idIdioma);
+            dgvListarTraduccion.DataSource = traducciones;
+
+            if (idEtiqueta.HasValue)
+                SeleccionarEtiquetaEnGrilla(idEtiqueta.Value);
+            else if (traducciones.Count > 0)
+                SeleccionarEtiquetaEnGrilla(traducciones.First().IdEtiqueta);
+        }
+
+        private void SeleccionarEtiquetaEnGrilla(int idEtiqueta)
+        {
+            foreach (DataGridViewRow row in dgvListarTraduccion.Rows)
+            {
+                if (row.DataBoundItem is EtiquetaTraduccion et && et.IdEtiqueta == idEtiqueta)
+                {
+                    row.Selected = true;
+                    dgvListarTraduccion.CurrentCell = row.Cells[0];
+                    txtAgregarTraduccion.Text = et.Texto ?? string.Empty;
+                    return;
+                }
+            }
+
+            if (dgvListarTraduccion.Rows.Count > 0)
+            {
+                dgvListarTraduccion.Rows[0].Selected = true;
+                dgvListarTraduccion.CurrentCell = dgvListarTraduccion.Rows[0].Cells[0];
+                if (dgvListarTraduccion.Rows[0].DataBoundItem is EtiquetaTraduccion et)
+                    txtAgregarTraduccion.Text = et.Texto ?? string.Empty;
+            }
+        }
+
+        private Idioma ObtenerIdiomaSeleccionado()
+        {
+            return dgvListarIdiomas.CurrentRow?.DataBoundItem as Idioma;
+        }
+
+        private EtiquetaTraduccion ObtenerEtiquetaSeleccionada()
+        {
+            return dgvListarTraduccion.CurrentRow?.DataBoundItem as EtiquetaTraduccion;
+        }
+
+        private void btnAgregarIdioma_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var nuevo = _idiomaSrv.CrearIdioma(txtAgregarIdioma.Text);
+                txtAgregarIdioma.Clear();
+                CargarIdiomasTab(nuevo.Id);
+                RecargarComboIdiomas();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void btnQuitarIdioma_Click(object sender, EventArgs e)
+        {
+            var seleccionado = ObtenerIdiomaSeleccionado();
+            if (seleccionado == null)
+            {
+                MessageBox.Show("Seleccioná un idioma primero.");
+                return;
+            }
+
+            var confirmar = MessageBox.Show(
+                $"¿Seguro que querés eliminar el idioma '{seleccionado.Nombre}'?",
+                "Confirmar eliminación",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmar != DialogResult.Yes)
+                return;
+
+            _idiomaSrv.EliminarIdioma(seleccionado.Id);
+            CargarIdiomasTab();
+            RecargarComboIdiomas();
+        }
+
+        private void dgvListarIdiomas_SelectionChanged(object sender, EventArgs e)
+        {
+            var idioma = ObtenerIdiomaSeleccionado();
+            if (idioma == null)
+            {
+                _actualizandoEstadoIdioma = true;
+                rbtnIdiomaActivo.Checked = false;
+                rbtnIdiomaInactivo.Checked = false;
+                _actualizandoEstadoIdioma = false;
+                dgvListarTraduccion.DataSource = null;
+                txtAgregarTraduccion.Clear();
+                return;
+            }
+
+            _actualizandoEstadoIdioma = true;
+            rbtnIdiomaActivo.Checked = idioma.Activo;
+            rbtnIdiomaInactivo.Checked = !idioma.Activo;
+            _actualizandoEstadoIdioma = false;
+
+            CargarTraduccionesParaIdioma(idioma.Id);
+        }
+
+        private void rbtnIdiomaActivo_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_actualizandoEstadoIdioma || !rbtnIdiomaActivo.Checked)
+                return;
+
+            var idioma = ObtenerIdiomaSeleccionado();
+            if (idioma == null)
+                return;
+
+            _idiomaSrv.ActualizarEstadoIdioma(idioma.Id, true);
+            CargarIdiomasTab(idioma.Id);
+            RecargarComboIdiomas();
+        }
+
+        private void rbtnIdiomaInactivo_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_actualizandoEstadoIdioma || !rbtnIdiomaInactivo.Checked)
+                return;
+
+            var idioma = ObtenerIdiomaSeleccionado();
+            if (idioma == null)
+                return;
+
+            _idiomaSrv.ActualizarEstadoIdioma(idioma.Id, false);
+            CargarIdiomasTab(idioma.Id);
+            RecargarComboIdiomas();
+        }
+
+        private void dgvListarTraduccion_SelectionChanged(object sender, EventArgs e)
+        {
+            var et = ObtenerEtiquetaSeleccionada();
+            txtAgregarTraduccion.Text = et?.Texto ?? string.Empty;
+        }
+
+        private void btnAgregarTraduccion_Click(object sender, EventArgs e)
+        {
+            var idioma = ObtenerIdiomaSeleccionado();
+            var etiqueta = ObtenerEtiquetaSeleccionada();
+            if (idioma == null || etiqueta == null)
+            {
+                MessageBox.Show("Seleccioná un idioma y una etiqueta.");
+                return;
+            }
+
+            try
+            {
+                _idiomaSrv.GuardarTraduccion(idioma.Id, etiqueta.IdEtiqueta, txtAgregarTraduccion.Text);
+                CargarTraduccionesParaIdioma(idioma.Id, etiqueta.IdEtiqueta);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void btnQuitarTraduccion_Click(object sender, EventArgs e)
+        {
+            var idioma = ObtenerIdiomaSeleccionado();
+            var etiqueta = ObtenerEtiquetaSeleccionada();
+            if (idioma == null || etiqueta == null)
+            {
+                MessageBox.Show("Seleccioná un idioma y una etiqueta.");
+                return;
+            }
+
+            _idiomaSrv.EliminarTraduccion(idioma.Id, etiqueta.IdEtiqueta);
+            CargarTraduccionesParaIdioma(idioma.Id);
         }
 
         private void btnEliminar_Click(object sender, EventArgs e)
