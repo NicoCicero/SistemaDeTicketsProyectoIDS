@@ -88,17 +88,19 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.txtCambioUsuarioId = new System.Windows.Forms.TextBox();
             this.dgvCambios = new System.Windows.Forms.DataGridView();
             this.tabPermisos = new System.Windows.Forms.TabPage();
+            this.button1 = new System.Windows.Forms.Button();
             this.lblUsuarioSel = new System.Windows.Forms.Label();
             this.btnAsignar = new System.Windows.Forms.Button();
             this.btnQuitar = new System.Windows.Forms.Button();
             this.treeDisponibles = new System.Windows.Forms.TreeView();
             this.treeUsuarios = new System.Windows.Forms.TreeView();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             this.tabGeneral.SuspendLayout();
             this.tabMenuPrincipal.SuspendLayout();
             this.tabIdiomas.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvListarTraduccion)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvListarIdiomas)).BeginInit();
             this.tabUsuarios.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvGestionUsuario)).BeginInit();
             this.tabBitacora.SuspendLayout();
@@ -106,8 +108,6 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabControlCambios.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCambios)).BeginInit();
             this.tabPermisos.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvListarTraduccion)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvListarIdiomas)).BeginInit();
             this.SuspendLayout();
             // 
             // btnCerrarSesion
@@ -126,15 +126,15 @@ namespace Proyecto_IS_Sistema_De_Tickets
             // 
             // tabGeneral
             // 
-            this.tabGeneral.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.tabGeneral.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabGeneral.Controls.Add(this.tabMenuPrincipal);
-            this.tabGeneral.Controls.Add(this.tabIdiomas);
             this.tabGeneral.Controls.Add(this.tabUsuarios);
             this.tabGeneral.Controls.Add(this.tabBitacora);
             this.tabGeneral.Controls.Add(this.tabControlCambios);
             this.tabGeneral.Controls.Add(this.tabPermisos);
+            this.tabGeneral.Controls.Add(this.tabIdiomas);
             this.tabGeneral.Location = new System.Drawing.Point(9, 2);
             this.tabGeneral.Margin = new System.Windows.Forms.Padding(2);
             this.tabGeneral.Name = "tabGeneral";
@@ -154,18 +154,18 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabMenuPrincipal.TabIndex = 2;
             this.tabMenuPrincipal.Text = "Menu Principal";
             this.tabMenuPrincipal.UseVisualStyleBackColor = true;
-            //
+            // 
             // cmbIdiomas
-            //
+            // 
             this.cmbIdiomas.FormattingEnabled = true;
             this.cmbIdiomas.Location = new System.Drawing.Point(616, 5);
             this.cmbIdiomas.Name = "cmbIdiomas";
             this.cmbIdiomas.Size = new System.Drawing.Size(139, 21);
             this.cmbIdiomas.TabIndex = 0;
             this.cmbIdiomas.SelectedIndexChanged += new System.EventHandler(this.cmbIdiomas_SelectedIndexChanged);
-            //
+            // 
             // tabIdiomas
-            //
+            // 
             this.tabIdiomas.Controls.Add(this.rbtnIdiomaInactivo);
             this.tabIdiomas.Controls.Add(this.rbtnIdiomaActivo);
             this.tabIdiomas.Controls.Add(this.btnQuitarTraduccion);
@@ -185,9 +185,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabIdiomas.TabIndex = 5;
             this.tabIdiomas.Text = "Idiomas";
             this.tabIdiomas.UseVisualStyleBackColor = true;
-            //
+            // 
             // rbtnIdiomaInactivo
-            //
+            // 
             this.rbtnIdiomaInactivo.AutoSize = true;
             this.rbtnIdiomaInactivo.Location = new System.Drawing.Point(120, 61);
             this.rbtnIdiomaInactivo.Name = "rbtnIdiomaInactivo";
@@ -197,9 +197,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.rbtnIdiomaInactivo.Text = "Inactivo";
             this.rbtnIdiomaInactivo.UseVisualStyleBackColor = true;
             this.rbtnIdiomaInactivo.CheckedChanged += new System.EventHandler(this.rbtnIdiomaInactivo_CheckedChanged);
-            //
+            // 
             // rbtnIdiomaActivo
-            //
+            // 
             this.rbtnIdiomaActivo.AutoSize = true;
             this.rbtnIdiomaActivo.Location = new System.Drawing.Point(21, 61);
             this.rbtnIdiomaActivo.Name = "rbtnIdiomaActivo";
@@ -209,9 +209,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.rbtnIdiomaActivo.Text = "Activo";
             this.rbtnIdiomaActivo.UseVisualStyleBackColor = true;
             this.rbtnIdiomaActivo.CheckedChanged += new System.EventHandler(this.rbtnIdiomaActivo_CheckedChanged);
-            //
+            // 
             // btnQuitarTraduccion
-            //
+            // 
             this.btnQuitarTraduccion.Location = new System.Drawing.Point(614, 53);
             this.btnQuitarTraduccion.Name = "btnQuitarTraduccion";
             this.btnQuitarTraduccion.Size = new System.Drawing.Size(129, 23);
@@ -219,9 +219,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.btnQuitarTraduccion.Text = "Quitar Traducción";
             this.btnQuitarTraduccion.UseVisualStyleBackColor = true;
             this.btnQuitarTraduccion.Click += new System.EventHandler(this.btnQuitarTraduccion_Click);
-            //
+            // 
             // btnAgregarTraduccion
-            //
+            // 
             this.btnAgregarTraduccion.Location = new System.Drawing.Point(614, 24);
             this.btnAgregarTraduccion.Name = "btnAgregarTraduccion";
             this.btnAgregarTraduccion.Size = new System.Drawing.Size(129, 23);
@@ -229,16 +229,16 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.btnAgregarTraduccion.Text = "Agregar Traducción";
             this.btnAgregarTraduccion.UseVisualStyleBackColor = true;
             this.btnAgregarTraduccion.Click += new System.EventHandler(this.btnAgregarTraduccion_Click);
-            //
+            // 
             // txtAgregarTraduccion
-            //
+            // 
             this.txtAgregarTraduccion.Location = new System.Drawing.Point(404, 30);
             this.txtAgregarTraduccion.Name = "txtAgregarTraduccion";
             this.txtAgregarTraduccion.Size = new System.Drawing.Size(190, 20);
             this.txtAgregarTraduccion.TabIndex = 8;
-            //
+            // 
             // btnQuitarIdioma
-            //
+            // 
             this.btnQuitarIdioma.Location = new System.Drawing.Point(293, 24);
             this.btnQuitarIdioma.Name = "btnQuitarIdioma";
             this.btnQuitarIdioma.Size = new System.Drawing.Size(107, 23);
@@ -246,9 +246,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.btnQuitarIdioma.Text = "Quitar Idioma";
             this.btnQuitarIdioma.UseVisualStyleBackColor = true;
             this.btnQuitarIdioma.Click += new System.EventHandler(this.btnQuitarIdioma_Click);
-            //
+            // 
             // btnAgregarIdioma
-            //
+            // 
             this.btnAgregarIdioma.Location = new System.Drawing.Point(182, 24);
             this.btnAgregarIdioma.Name = "btnAgregarIdioma";
             this.btnAgregarIdioma.Size = new System.Drawing.Size(105, 23);
@@ -256,20 +256,20 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.btnAgregarIdioma.Text = "Agregar Idioma";
             this.btnAgregarIdioma.UseVisualStyleBackColor = true;
             this.btnAgregarIdioma.Click += new System.EventHandler(this.btnAgregarIdioma_Click);
-            //
+            // 
             // txtAgregarIdioma
-            //
+            // 
             this.txtAgregarIdioma.Location = new System.Drawing.Point(21, 26);
             this.txtAgregarIdioma.Name = "txtAgregarIdioma";
             this.txtAgregarIdioma.Size = new System.Drawing.Size(155, 20);
             this.txtAgregarIdioma.TabIndex = 5;
-            //
+            // 
             // dgvListarTraduccion
-            //
+            // 
             this.dgvListarTraduccion.AllowUserToAddRows = false;
             this.dgvListarTraduccion.AllowUserToDeleteRows = false;
-            this.dgvListarTraduccion.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.dgvListarTraduccion.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvListarTraduccion.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvListarTraduccion.Location = new System.Drawing.Point(404, 82);
@@ -280,13 +280,13 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.dgvListarTraduccion.Size = new System.Drawing.Size(339, 286);
             this.dgvListarTraduccion.TabIndex = 4;
             this.dgvListarTraduccion.SelectionChanged += new System.EventHandler(this.dgvListarTraduccion_SelectionChanged);
-            //
+            // 
             // dgvListarIdiomas
-            //
+            // 
             this.dgvListarIdiomas.AllowUserToAddRows = false;
             this.dgvListarIdiomas.AllowUserToDeleteRows = false;
-            this.dgvListarIdiomas.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.dgvListarIdiomas.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvListarIdiomas.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvListarIdiomas.Location = new System.Drawing.Point(21, 82);
@@ -297,27 +297,27 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.dgvListarIdiomas.Size = new System.Drawing.Size(332, 286);
             this.dgvListarIdiomas.TabIndex = 3;
             this.dgvListarIdiomas.SelectionChanged += new System.EventHandler(this.dgvListarIdiomas_SelectionChanged);
-            //
+            // 
             // lblTraduccion
-            //
+            // 
             this.lblTraduccion.AutoSize = true;
             this.lblTraduccion.Location = new System.Drawing.Point(401, 11);
             this.lblTraduccion.Name = "lblTraduccion";
-            this.lblTraduccion.Size = new System.Drawing.Size(66, 13);
+            this.lblTraduccion.Size = new System.Drawing.Size(61, 13);
             this.lblTraduccion.TabIndex = 1;
             this.lblTraduccion.Text = "Traducción";
-            //
+            // 
             // lblNuevoIdioma
-            //
+            // 
             this.lblNuevoIdioma.AutoSize = true;
             this.lblNuevoIdioma.Location = new System.Drawing.Point(18, 11);
             this.lblNuevoIdioma.Name = "lblNuevoIdioma";
-            this.lblNuevoIdioma.Size = new System.Drawing.Size(71, 13);
+            this.lblNuevoIdioma.Size = new System.Drawing.Size(72, 13);
             this.lblNuevoIdioma.TabIndex = 0;
             this.lblNuevoIdioma.Text = "Nuevo idioma";
-            //
+            // 
             // tabUsuarios
-            //
+            // 
             this.tabUsuarios.Controls.Add(this.btnEliminar);
             this.tabUsuarios.Controls.Add(this.btnNuevoRegistro);
             this.tabUsuarios.Controls.Add(this.btnActualizar);
@@ -717,6 +717,16 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabPermisos.Text = "Permisos";
             this.tabPermisos.UseVisualStyleBackColor = true;
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(328, 276);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(108, 23);
+            this.button1.TabIndex = 5;
+            this.button1.Text = "Quitar Permiso";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
+            // 
             // lblUsuarioSel
             // 
             this.lblUsuarioSel.AutoSize = true;
@@ -762,16 +772,6 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.treeUsuarios.TabIndex = 0;
             this.treeUsuarios.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeUsuarios_AfterSelect_1);
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(328, 276);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(108, 23);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "Quitar Permiso";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click_1);
-            // 
             // FormPrueba
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -786,6 +786,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             this.tabGeneral.ResumeLayout(false);
             this.tabMenuPrincipal.ResumeLayout(false);
+            this.tabIdiomas.ResumeLayout(false);
+            this.tabIdiomas.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvListarTraduccion)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvListarIdiomas)).EndInit();
             this.tabUsuarios.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvGestionUsuario)).EndInit();
             this.tabBitacora.ResumeLayout(false);
@@ -794,12 +798,8 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabControlCambios.ResumeLayout(false);
             this.tabControlCambios.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCambios)).EndInit();
-            this.tabIdiomas.ResumeLayout(false);
-            this.tabIdiomas.PerformLayout();
             this.tabPermisos.ResumeLayout(false);
             this.tabPermisos.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvListarTraduccion)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvListarIdiomas)).EndInit();
             this.ResumeLayout(false);
 
         }

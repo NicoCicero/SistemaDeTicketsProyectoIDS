@@ -10,3 +10,9 @@ C:\Users\nicol\source\repos\IS_Tickets\BE\obj\Debug\BE.csproj.AssemblyReference.
 C:\Users\nicol\source\repos\IS_Tickets\BE\obj\Debug\BE.csproj.CoreCompileInputs.cache
 C:\Users\nicol\source\repos\IS_Tickets\BE\obj\Debug\BE.dll
 C:\Users\nicol\source\repos\IS_Tickets\BE\obj\Debug\BE.pdb
+C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\bin\Debug\BE.dll
+C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\bin\Debug\BE.pdb
+C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\obj\Debug\BE.csproj.AssemblyReference.cache
+C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\obj\Debug\BE.csproj.CoreCompileInputs.cache
+C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\obj\Debug\BE.dll
+C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\obj\Debug\BE.pdb
