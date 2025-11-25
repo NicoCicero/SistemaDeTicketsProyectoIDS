@@ -62,5 +62,64 @@ namespace DAO
             }
             return list;
         }
+
+        public List<(int IdEtiqueta, string Clave, string Descripcion, string Texto)> ListarEtiquetasConTraduccion(int idIdioma)
+        {
+            var list = new List<(int, string, string, string)>();
+            using (var cn = GetConnection())
+            using (var cmd = new SqlCommand(@"
+                SELECT e.IdEtiqueta, e.Clave, e.Descripcion, t.Texto
+                FROM Etiqueta e
+                LEFT JOIN Traduccion t ON t.IdEtiqueta = e.IdEtiqueta AND t.IdIdioma = @id
+                ORDER BY e.Clave;", cn))
+            {
+                cmd.Parameters.AddWithValue("@id", idIdioma);
+                cn.Open();
+                using (var rd = cmd.ExecuteReader())
+                {
+                    while (rd.Read())
+                    {
+                        list.Add((
+                            rd.GetInt32(0),
+                            rd.GetString(1),
+                            rd.GetString(2),
+                            rd.IsDBNull(3) ? null : rd.GetString(3)
+                        ));
+                    }
+                }
+            }
+            return list;
+        }
+
+        public void GuardarTraduccion(int idIdioma, int idEtiqueta, string texto)
+        {
+            using (var cn = GetConnection())
+            using (var cmd = new SqlCommand(@"
+                MERGE Traduccion AS target
+                USING (SELECT @idIdioma AS IdIdioma, @idEtiqueta AS IdEtiqueta) AS src
+                ON target.IdIdioma = src.IdIdioma AND target.IdEtiqueta = src.IdEtiqueta
+                WHEN MATCHED THEN UPDATE SET Texto = @texto
+                WHEN NOT MATCHED THEN INSERT (IdIdioma, IdEtiqueta, Texto) VALUES (@idIdioma, @idEtiqueta, @texto);
+            ", cn))
+            {
+                cmd.Parameters.AddWithValue("@idIdioma", idIdioma);
+                cmd.Parameters.AddWithValue("@idEtiqueta", idEtiqueta);
+                cmd.Parameters.AddWithValue("@texto", texto);
+                cn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void EliminarTraduccion(int idIdioma, int idEtiqueta)
+        {
+            using (var cn = GetConnection())
+            using (var cmd = new SqlCommand("DELETE FROM Traduccion WHERE IdIdioma = @idIdioma AND IdEtiqueta = @idEtiqueta;", cn))
+            {
+                cmd.Parameters.AddWithValue("@idIdioma", idIdioma);
+                cmd.Parameters.AddWithValue("@idEtiqueta", idEtiqueta);
+                cn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
     }
 }
