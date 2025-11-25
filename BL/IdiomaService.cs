@@ -46,76 +46,8 @@ namespace BL
                 Id = r.Id,
                 Codigo = r.Codigo,
                 Nombre = r.Nombre,
-                EsPorDefecto = r.EsPorDefecto,
-                Activo = r.Activo
+                EsPorDefecto = r.EsPorDefecto
             }).ToList();
-        }
-
-        public List<Idioma> ListarIdiomasActivos()
-        {
-            return ListarIdiomas().Where(i => i.Activo).ToList();
-        }
-
-        public Idioma CrearIdioma(string nombre)
-        {
-            if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre del idioma es obligatorio", nameof(nombre));
-
-            nombre = nombre.Trim();
-            if (_idiomaRepo.ExisteNombre(nombre))
-                throw new InvalidOperationException("Ya existe un idioma con ese nombre.");
-
-            string codigoBase = new string(nombre.ToUpperInvariant().Where(char.IsLetterOrDigit).ToArray());
-            if (string.IsNullOrEmpty(codigoBase))
-                codigoBase = "IDI";
-            if (codigoBase.Length > 5)
-                codigoBase = codigoBase.Substring(0, 5);
-
-            string codigo = codigoBase;
-            int idx = 1;
-            while (_idiomaRepo.ExisteCodigo(codigo))
-            {
-                codigo = $"{codigoBase}{idx}";
-                idx++;
-            }
-
-            var id = _idiomaRepo.CrearIdioma(codigo, nombre, false);
-            return new Idioma { Id = id, Codigo = codigo, Nombre = nombre, EsPorDefecto = false, Activo = false };
-        }
-
-        public void ActualizarEstadoIdioma(int idIdioma, bool activo)
-        {
-            _idiomaRepo.ActualizarEstado(idIdioma, activo);
-        }
-
-        public void EliminarIdioma(int idIdioma)
-        {
-            _idiomaRepo.EliminarIdioma(idIdioma);
-        }
-
-        public List<EtiquetaTraduccion> ListarEtiquetasConTraduccion(int idIdioma)
-        {
-            var raws = _tradRepo.ListarEtiquetasConTraduccion(idIdioma);
-            return raws.Select(r => new EtiquetaTraduccion
-            {
-                IdEtiqueta = r.IdEtiqueta,
-                Clave = r.Clave,
-                Descripcion = r.Descripcion,
-                Texto = r.Texto
-            }).ToList();
-        }
-
-        public void GuardarTraduccion(int idIdioma, int idEtiqueta, string texto)
-        {
-            if (string.IsNullOrWhiteSpace(texto))
-                throw new ArgumentException("El texto de la traducción es obligatorio", nameof(texto));
-
-            _tradRepo.GuardarTraduccion(idIdioma, idEtiqueta, texto.Trim());
-        }
-
-        public void EliminarTraduccion(int idIdioma, int idEtiqueta)
-        {
-            _tradRepo.EliminarTraduccion(idIdioma, idEtiqueta);
         }
     }
 }
