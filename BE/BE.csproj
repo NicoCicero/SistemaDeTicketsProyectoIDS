@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="AuditoriaEvento.cs" />
     <Compile Include="ControlCambioEntry.cs" />
+    <Compile Include="EtiquetaTraduccion.cs" />
     <Compile Include="Idioma.cs" />
     <Compile Include="Permiso.cs" />
     <Compile Include="PermisoComponent.cs" />
