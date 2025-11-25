@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="AuditoriaRepository.cs" />
     <Compile Include="ControlCambiosRepository.cs" />
+    <Compile Include="DatabaseMaintenanceRepository.cs" />
     <Compile Include="DAL.cs" />
     <Compile Include="DvRawRepository.cs" />
     <Compile Include="DvvRepository.cs" />

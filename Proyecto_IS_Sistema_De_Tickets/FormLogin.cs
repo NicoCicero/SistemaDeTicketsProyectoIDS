@@ -239,6 +239,11 @@ ALTER DATABASE {databaseName} SET MULTI_USER;";
 
             if (ok)
             {
+                if (!VerificarIntegridadTrasLogin())
+                {
+                    return;
+                }
+
                 this.Hide();
                 var main = new FormPrueba();
                 main.FormClosed += (_, __) => Application.Exit();  // cierra todo al cerrar el main

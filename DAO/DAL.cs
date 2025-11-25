@@ -10,8 +10,8 @@ namespace DAO
     public class DAL
     {
 
-        private readonly string mConn;
-        
+        protected readonly string mConn;
+
         public DAL()
         {
             mConn = "Data Source=localhost;Initial Catalog=BDSistemaDeTickets;Integrated Security=True";
@@ -21,6 +21,16 @@ namespace DAO
         {
             return new SqlConnection(mConn);
 
+        }
+
+        protected SqlConnection GetMasterConnection()
+        {
+            var builder = new SqlConnectionStringBuilder(mConn)
+            {
+                InitialCatalog = "master"
+            };
+
+            return new SqlConnection(builder.ConnectionString);
         }
 
     }
