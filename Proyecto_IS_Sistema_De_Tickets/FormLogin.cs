@@ -64,33 +64,6 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 cmbIdiomas.SelectedValue = codActual;
             else
                 cmbIdiomas.SelectedValue = idiomas.FirstOrDefault(i => i.EsPorDefecto)?.Codigo ?? idiomas.First().Codigo;
-
-            try
-            {
-                var (ok, detalle) = BL.VerificadorIntegridadService.Instancia.ValidarTodo();
-                if (!ok)
-                {
-                    var r = MessageBox.Show(
-                        "Se detectó una inconsistencia de integridad (DVH/DVV).\n\n" +
-                        detalle + "\n\n" +
-                        "¿Deseás continuar de todas formas?",
-                        "Integridad de datos",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Warning);
-
-                    if (r == DialogResult.No)
-                    {
-                        Application.Exit();
-                        return;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al validar integridad: " + ex.Message);
-            }
-
-
         }
 
         // este lo llama el IdiomaManager
@@ -133,6 +106,75 @@ namespace Proyecto_IS_Sistema_De_Tickets
             //// si tenés link
             //if (lnkOlvido != null)
             //    lnkOlvido.Text = "[ " + t["LOGIN_CONTRASENA"] + " ? ]"; // o una etiqueta propia
+        }
+
+        private void MostrarDialogoIntegridad(string detalle)
+        {
+            var rutaBackup = BL.DatabaseMaintenanceService.Instancia.RutaBackupPorDefecto;
+            var mensaje =
+                "Se detectó una inconsistencia de integridad (DVH/DVV).\n\n" +
+                detalle + "\n\n" +
+                "Elegí una acción:\n" +
+                $"- Presioná 'Sí' para restaurar la base desde {rutaBackup}.\n" +
+                "- Presioná 'No' para aceptar los errores y recalcular DVH/DVV.\n" +
+                "- Presioná 'Cancelar' para continuar sin cambios.";
+
+            var r = MessageBox.Show(
+                mensaje,
+                "Integridad de datos",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button1);
+
+            switch (r)
+            {
+                case DialogResult.Yes:
+                    try
+                    {
+                        BL.DatabaseMaintenanceService.Instancia.RestaurarDesdeBackup();
+                        MessageBox.Show("La base de datos se restauró correctamente desde el backup.");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("No se pudo restaurar la base de datos: " + ex.Message);
+                    }
+                    break;
+                case DialogResult.No:
+                    try
+                    {
+                        BL.VerificadorIntegridadService.Instancia.RecalcularTodo();
+                        MessageBox.Show("Se recalcularon los DVH/DVV.");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("No se pudieron recalcular los DVH/DVV: " + ex.Message);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private bool VerificarIntegridadTrasLogin()
+        {
+            var (ok, detalle) = BL.VerificadorIntegridadService.Instancia.ValidarTodo();
+
+            if (ok)
+                return true;
+
+            bool esAdmin = SessionManager.Instancia.TieneRol("Administrador");
+
+            if (!esAdmin)
+            {
+                MsgError("Error inesperado. intente mas tarde");
+                AuthService.Instancia.Logout();
+                ActivarPlaceholderContraseña();
+                txt_Usuario.Focus();
+                return false;
+            }
+
+            MostrarDialogoIntegridad(detalle);
+            return true;
         }
 
         private void txt_Usuario_Enter(object sender, EventArgs e)
@@ -192,6 +234,11 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
             if (ok)
             {
+                if (!VerificarIntegridadTrasLogin())
+                {
+                    return;
+                }
+
                 this.Hide();
                 var main = new FormPrueba();
                 main.FormClosed += (_, __) => Application.Exit();  // cierra todo al cerrar el main

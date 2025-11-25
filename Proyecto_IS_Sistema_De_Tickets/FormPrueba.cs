@@ -1194,6 +1194,19 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         }
 
+        private void btnCrearBackup_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string ruta = DatabaseMaintenanceService.Instancia.CrearBackup();
+                MessageBox.Show($"Backup creado correctamente en: {ruta}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al crear el backup: " + ex.Message);
+            }
+        }
+
         private void treeDisponibles_AfterSelect(object sender, TreeViewEventArgs e)
         {
 
