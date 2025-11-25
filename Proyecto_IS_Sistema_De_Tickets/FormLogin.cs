@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SqlClient;
 using System.Runtime.InteropServices;
 using BL;
 
@@ -70,19 +71,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 var (ok, detalle) = BL.VerificadorIntegridadService.Instancia.ValidarTodo();
                 if (!ok)
                 {
-                    var r = MessageBox.Show(
-                        "Se detectó una inconsistencia de integridad (DVH/DVV).\n\n" +
-                        detalle + "\n\n" +
-                        "¿Deseás continuar de todas formas?",
-                        "Integridad de datos",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Warning);
-
-                    if (r == DialogResult.No)
-                    {
-                        Application.Exit();
-                        return;
-                    }
+                    MostrarDialogoIntegridad(detalle);
                 }
             }
             catch (Exception ex)
@@ -133,6 +122,64 @@ namespace Proyecto_IS_Sistema_De_Tickets
             //// si tenés link
             //if (lnkOlvido != null)
             //    lnkOlvido.Text = "[ " + t["LOGIN_CONTRASENA"] + " ? ]"; // o una etiqueta propia
+        }
+
+        private void MostrarDialogoIntegridad(string detalle)
+        {
+            var mensaje =
+                "Se detectó una inconsistencia de integridad (DVH/DVV).\n\n" +
+                detalle + "\n\n" +
+                "Elegí una acción:\n" +
+                "- Presioná 'Sí' para restaurar la base desde C\\Backups\\TuBaseDeDatos.bak.\n" +
+                "- Presioná 'No' para aceptar los errores y recalcular DVH/DVV.\n" +
+                "- Presioná 'Cancelar' para continuar sin cambios.";
+
+            var r = MessageBox.Show(
+                mensaje,
+                "Integridad de datos",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button1);
+
+            switch (r)
+            {
+                case DialogResult.Yes:
+                    EjecutarRestoreDesdeBackup();
+                    MessageBox.Show("La base de datos se restauró correctamente desde el backup.");
+                    break;
+                case DialogResult.No:
+                    RecalcularDigitosVerificadores();
+                    MessageBox.Show("Se recalcularon los DVH/DVV.");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void EjecutarRestoreDesdeBackup()
+        {
+            const string backupPath = @"C:\\Backups\\TuBaseDeDatos.bak";
+            const string databaseName = "BDSistemaDeTickets";
+
+            var masterConn = new SqlConnection("Data Source=localhost;Initial Catalog=master;Integrated Security=True");
+
+            var sql = $@"
+ALTER DATABASE {databaseName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+RESTORE DATABASE {databaseName} FROM DISK = @ruta WITH REPLACE;
+ALTER DATABASE {databaseName} SET MULTI_USER;";
+
+            using (masterConn)
+            using (var cmd = new SqlCommand(sql, masterConn))
+            {
+                cmd.Parameters.AddWithValue("@ruta", backupPath);
+                masterConn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private void RecalcularDigitosVerificadores()
+        {
+            BL.VerificadorIntegridadService.Instancia.RecalcularTodo();
         }
 
         private void txt_Usuario_Enter(object sender, EventArgs e)

@@ -36,6 +36,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             this.tabGeneral = new System.Windows.Forms.TabControl();
             this.tabMenuPrincipal = new System.Windows.Forms.TabPage();
+            this.btnCrearBackup = new System.Windows.Forms.Button();
             this.cmbIdiomas = new System.Windows.Forms.ComboBox();
             this.tabIdiomas = new System.Windows.Forms.TabPage();
             this.rbtnIdiomaInactivo = new System.Windows.Forms.RadioButton();
@@ -142,9 +143,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabGeneral.Size = new System.Drawing.Size(768, 409);
             this.tabGeneral.TabIndex = 17;
             this.tabGeneral.SelectedIndexChanged += new System.EventHandler(this.TabGeneral_SelectedIndexChanged);
-            // 
+            //
             // tabMenuPrincipal
-            // 
+            //
+            this.tabMenuPrincipal.Controls.Add(this.btnCrearBackup);
             this.tabMenuPrincipal.Controls.Add(this.cmbIdiomas);
             this.tabMenuPrincipal.Location = new System.Drawing.Point(4, 22);
             this.tabMenuPrincipal.Margin = new System.Windows.Forms.Padding(2);
@@ -154,9 +156,19 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabMenuPrincipal.TabIndex = 2;
             this.tabMenuPrincipal.Text = "Menu Principal";
             this.tabMenuPrincipal.UseVisualStyleBackColor = true;
-            // 
+            //
+            // btnCrearBackup
+            //
+            this.btnCrearBackup.Location = new System.Drawing.Point(21, 18);
+            this.btnCrearBackup.Name = "btnCrearBackup";
+            this.btnCrearBackup.Size = new System.Drawing.Size(160, 40);
+            this.btnCrearBackup.TabIndex = 1;
+            this.btnCrearBackup.Text = "Crear Backup";
+            this.btnCrearBackup.UseVisualStyleBackColor = true;
+            this.btnCrearBackup.Click += new System.EventHandler(this.btnCrearBackup_Click);
+            //
             // cmbIdiomas
-            // 
+            //
             this.cmbIdiomas.FormattingEnabled = true;
             this.cmbIdiomas.Location = new System.Drawing.Point(616, 5);
             this.cmbIdiomas.Name = "cmbIdiomas";
@@ -861,6 +873,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private System.Windows.Forms.Button btnAsignar;
         private System.Windows.Forms.Button btnQuitar;
         private System.Windows.Forms.TreeView treeDisponibles;
+        private System.Windows.Forms.Button btnCrearBackup;
         private Button btnEliminar;
         private Button button1;
         private System.Windows.Forms.TabPage tabIdiomas;
