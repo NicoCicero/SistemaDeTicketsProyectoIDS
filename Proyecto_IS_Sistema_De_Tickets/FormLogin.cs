@@ -52,7 +52,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
             string sql = AdminSeedHelper.BuildUpdateAdminSql("admin@sistema.com", "Admin123!");
             Console.WriteLine(sql);
 
-            var idiomas = _idiomaSrv.ListarIdiomas();
+            var idiomas = _idiomaSrv.ListarIdiomasActivos();
             cmbIdiomas.DataSource = idiomas;
             cmbIdiomas.DisplayMember = "Nombre";
             cmbIdiomas.ValueMember = "Codigo";
