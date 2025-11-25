@@ -6,10 +6,12 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SqlClient;
 
 namespace Proyecto_IS_Sistema_De_Tickets
 {
@@ -1198,13 +1200,30 @@ namespace Proyecto_IS_Sistema_De_Tickets
         {
             try
             {
-                string ruta = DatabaseMaintenanceService.Instancia.CrearBackup();
+                string ruta = CrearBackupBaseDeDatos();
                 MessageBox.Show($"Backup creado correctamente en: {ruta}");
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error al crear el backup: " + ex.Message);
             }
+        }
+
+        private string CrearBackupBaseDeDatos()
+        {
+            var carpetaBackup = @"C:\\Users\\nicol\\OneDrive\\Escritorio";
+            var nombreArchivo = $"BDSistemaDeTickets_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
+            var rutaCompleta = Path.Combine(carpetaBackup, nombreArchivo);
+
+            using (var cn = new SqlConnection("Data Source=localhost;Initial Catalog=master;Integrated Security=True"))
+            using (var cmd = new SqlCommand("BACKUP DATABASE BDSistemaDeTickets TO DISK = @ruta WITH FORMAT, INIT;", cn))
+            {
+                cmd.Parameters.AddWithValue("@ruta", rutaCompleta);
+                cn.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            return rutaCompleta;
         }
 
         private void treeDisponibles_AfterSelect(object sender, TreeViewEventArgs e)

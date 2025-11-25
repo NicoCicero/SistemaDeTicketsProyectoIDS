@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SqlClient;
 using System.Runtime.InteropServices;
 using BL;
 
@@ -64,6 +65,21 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 cmbIdiomas.SelectedValue = codActual;
             else
                 cmbIdiomas.SelectedValue = idiomas.FirstOrDefault(i => i.EsPorDefecto)?.Codigo ?? idiomas.First().Codigo;
+
+            try
+            {
+                var (ok, detalle) = BL.VerificadorIntegridadService.Instancia.ValidarTodo();
+                if (!ok)
+                {
+                    MostrarDialogoIntegridad(detalle);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al validar integridad: " + ex.Message);
+            }
+
+
         }
 
         // este lo llama el IdiomaManager
@@ -110,12 +126,11 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         private void MostrarDialogoIntegridad(string detalle)
         {
-            var rutaBackup = BL.DatabaseMaintenanceService.Instancia.RutaBackupPorDefecto;
             var mensaje =
                 "Se detectó una inconsistencia de integridad (DVH/DVV).\n\n" +
                 detalle + "\n\n" +
                 "Elegí una acción:\n" +
-                $"- Presioná 'Sí' para restaurar la base desde {rutaBackup}.\n" +
+                "- Presioná 'Sí' para restaurar la base desde C\\Backups\\TuBaseDeDatos.bak.\n" +
                 "- Presioná 'No' para aceptar los errores y recalcular DVH/DVV.\n" +
                 "- Presioná 'Cancelar' para continuar sin cambios.";
 
@@ -129,52 +144,42 @@ namespace Proyecto_IS_Sistema_De_Tickets
             switch (r)
             {
                 case DialogResult.Yes:
-                    try
-                    {
-                        BL.DatabaseMaintenanceService.Instancia.RestaurarDesdeBackup();
-                        MessageBox.Show("La base de datos se restauró correctamente desde el backup.");
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("No se pudo restaurar la base de datos: " + ex.Message);
-                    }
+                    EjecutarRestoreDesdeBackup();
+                    MessageBox.Show("La base de datos se restauró correctamente desde el backup.");
                     break;
                 case DialogResult.No:
-                    try
-                    {
-                        BL.VerificadorIntegridadService.Instancia.RecalcularTodo();
-                        MessageBox.Show("Se recalcularon los DVH/DVV.");
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("No se pudieron recalcular los DVH/DVV: " + ex.Message);
-                    }
+                    RecalcularDigitosVerificadores();
+                    MessageBox.Show("Se recalcularon los DVH/DVV.");
                     break;
                 default:
                     break;
             }
         }
 
-        private bool VerificarIntegridadTrasLogin()
+        private void EjecutarRestoreDesdeBackup()
         {
-            var (ok, detalle) = BL.VerificadorIntegridadService.Instancia.ValidarTodo();
+            const string backupPath = @"C:\\Backups\\TuBaseDeDatos.bak";
+            const string databaseName = "BDSistemaDeTickets";
 
-            if (ok)
-                return true;
+            var masterConn = new SqlConnection("Data Source=localhost;Initial Catalog=master;Integrated Security=True");
 
-            bool esAdmin = SessionManager.Instancia.TieneRol("Administrador");
+            var sql = $@"
+ALTER DATABASE {databaseName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+RESTORE DATABASE {databaseName} FROM DISK = @ruta WITH REPLACE;
+ALTER DATABASE {databaseName} SET MULTI_USER;";
 
-            if (!esAdmin)
+            using (masterConn)
+            using (var cmd = new SqlCommand(sql, masterConn))
             {
-                MsgError("Error inesperado. intente mas tarde");
-                AuthService.Instancia.Logout();
-                ActivarPlaceholderContraseña();
-                txt_Usuario.Focus();
-                return false;
+                cmd.Parameters.AddWithValue("@ruta", backupPath);
+                masterConn.Open();
+                cmd.ExecuteNonQuery();
             }
+        }
 
-            MostrarDialogoIntegridad(detalle);
-            return true;
+        private void RecalcularDigitosVerificadores()
+        {
+            BL.VerificadorIntegridadService.Instancia.RecalcularTodo();
         }
 
         private void txt_Usuario_Enter(object sender, EventArgs e)
