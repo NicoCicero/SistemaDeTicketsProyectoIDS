@@ -66,18 +66,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             else
                 cmbIdiomas.SelectedValue = idiomas.FirstOrDefault(i => i.EsPorDefecto)?.Codigo ?? idiomas.First().Codigo;
 
-            try
-            {
-                var (ok, detalle) = BL.VerificadorIntegridadService.Instancia.ValidarTodo();
-                if (!ok)
-                {
-                    MostrarDialogoIntegridad(detalle);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al validar integridad: " + ex.Message);
-            }
+            bool esAdmin = SessionManager.Instancia.TieneRol("Administrador");
+
+            
 
 
         }
@@ -126,11 +117,13 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         private void MostrarDialogoIntegridad(string detalle)
         {
+            var rutaBackup = BL.DatabaseMaintenanceService.Instancia.RutaBackupPorDefecto;
+
             var mensaje =
                 "Se detectó una inconsistencia de integridad (DVH/DVV).\n\n" +
                 detalle + "\n\n" +
                 "Elegí una acción:\n" +
-                "- Presioná 'Sí' para restaurar la base desde C\\Backups\\TuBaseDeDatos.bak.\n" +
+                $"- Presioná 'Sí' para restaurar la base desde {rutaBackup}.\n" +
                 "- Presioná 'No' para aceptar los errores y recalcular DVH/DVV.\n" +
                 "- Presioná 'Cancelar' para continuar sin cambios.";
 
@@ -144,13 +137,29 @@ namespace Proyecto_IS_Sistema_De_Tickets
             switch (r)
             {
                 case DialogResult.Yes:
-                    EjecutarRestoreDesdeBackup();
-                    MessageBox.Show("La base de datos se restauró correctamente desde el backup.");
+                    try
+                    {
+                        BL.DatabaseMaintenanceService.Instancia.RestaurarDesdeBackup();
+                        MessageBox.Show("La base de datos se restauró correctamente desde el backup.");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("No se pudo restaurar la base de datos: " + ex.Message);
+                    }
                     break;
+
                 case DialogResult.No:
-                    RecalcularDigitosVerificadores();
-                    MessageBox.Show("Se recalcularon los DVH/DVV.");
+                    try
+                    {
+                        BL.VerificadorIntegridadService.Instancia.RecalcularTodo();
+                        MessageBox.Show("Se recalcularon los DVH/DVV.");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("No se pudieron recalcular los DVH/DVV: " + ex.Message);
+                    }
                     break;
+
                 default:
                     break;
             }
@@ -303,6 +312,28 @@ ALTER DATABASE {databaseName} SET MULTI_USER;";
         {
             IdiomaManager.Instancia.Desuscribir(this);
             base.OnFormClosed(e);
+        }
+
+        private bool VerificarIntegridadTrasLogin()
+        {
+            var (ok, detalle) = BL.VerificadorIntegridadService.Instancia.ValidarTodo();
+
+            if (ok)
+                return true;
+
+            bool esAdmin = SessionManager.Instancia.TieneRol("Administrador");
+
+            if (!esAdmin)
+            {
+                MsgError("Error inesperado. Intente más tarde.");
+                AuthService.Instancia.Logout();
+                ActivarPlaceholderContraseña();
+                txt_Usuario.Focus();
+                return false;
+            }
+
+            MostrarDialogoIntegridad(detalle);
+            return true;
         }
 
 

@@ -29,6 +29,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private TabPage _tabBitacora;
         private TabPage _tabCambios;
         private TabPage _tabPermisos;
+        private TabPage _tabIdiomas;
         public FormPrueba()
         {
             InitializeComponent();
@@ -56,8 +57,17 @@ namespace Proyecto_IS_Sistema_De_Tickets
             bool puedeVerCambios = SessionManager.Instancia.TienePermiso("ControlCambios.Ver");
             bool puedeCrearTicket = usuario.TienePermiso("Ticket.Crear");
             bool puedeGestionarPermisos = SessionManager.Instancia.TienePermiso("Permiso.Gestionar");
+            bool puedeGestionarIdiomas = SessionManager.Instancia.TieneRol("Administrador");
 
-            // guardo referencia al tab (asumo que es el cuarto o quinto)
+
+            _tabIdiomas = tabGeneral.TabPages.Count > 1 ? tabGeneral.TabPages[4] : null;
+
+            if (!puedeGestionarIdiomas)
+            {
+                tabGeneral.TabPages.Remove(_tabIdiomas);
+            }
+
+            // guardo referencia al tab 
             _tabPermisos = tabGeneral.TabPages.Cast<TabPage>().FirstOrDefault(t => t.Name == "tabPermisos")
                 ?? (tabGeneral.TabPages.Count > 4 ? tabGeneral.TabPages[4] : null);
 
@@ -127,6 +137,16 @@ namespace Proyecto_IS_Sistema_De_Tickets
             {
                 ActualizarIdioma(ultimaTraduccion);
             }
+            bool esAdmin = SessionManager.Instancia.TieneRol("Administrador");
+            if (esAdmin)
+            {
+                btnCrearBackup.Visible = esAdmin;
+            }
+            else
+            {
+                btnCrearBackup.Visible = false;
+            }
+
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
@@ -744,7 +764,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
             treeUsuarios.ExpandAll();
         }
-        
+
 
         private void CargarRolesYPermisosDisponibles()
         {
@@ -877,7 +897,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
         }
 
-       
+
 
         private void treeUsuarios_AfterSelect_1(object sender, TreeViewEventArgs e)
         {
@@ -1200,7 +1220,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
         {
             try
             {
-                string ruta = CrearBackupBaseDeDatos();
+                string ruta = DatabaseMaintenanceService.Instancia.CrearBackup();
                 MessageBox.Show($"Backup creado correctamente en: {ruta}");
             }
             catch (Exception ex)
@@ -1209,22 +1229,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
             }
         }
 
-        private string CrearBackupBaseDeDatos()
-        {
-            var carpetaBackup = @"C:\\Users\\nicol\\OneDrive\\Escritorio";
-            var nombreArchivo = $"BDSistemaDeTickets_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
-            var rutaCompleta = Path.Combine(carpetaBackup, nombreArchivo);
 
-            using (var cn = new SqlConnection("Data Source=localhost;Initial Catalog=master;Integrated Security=True"))
-            using (var cmd = new SqlCommand("BACKUP DATABASE BDSistemaDeTickets TO DISK = @ruta WITH FORMAT, INIT;", cn))
-            {
-                cmd.Parameters.AddWithValue("@ruta", rutaCompleta);
-                cn.Open();
-                cmd.ExecuteNonQuery();
-            }
-
-            return rutaCompleta;
-        }
 
         private void treeDisponibles_AfterSelect(object sender, TreeViewEventArgs e)
         {
