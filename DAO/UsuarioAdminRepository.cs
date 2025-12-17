@@ -27,6 +27,63 @@ namespace DAO
             }
             return list;
         }
+
+        public bool RolExiste(string nombre)
+        {
+            using (var cn = GetConnection())
+            using (var cmd = new SqlCommand("SELECT 1 FROM Rol WHERE LOWER(Rol_Nombre) = LOWER(@nombre);", cn))
+            {
+                cmd.Parameters.AddWithValue("@nombre", nombre);
+                cn.Open();
+                return cmd.ExecuteScalar() != null;
+            }
+        }
+
+        public int CrearRol(string nombre, IEnumerable<int> permisosIds)
+        {
+            if (permisosIds == null)
+                throw new ArgumentNullException(nameof(permisosIds));
+
+            using (var cn = GetConnection())
+            {
+                cn.Open();
+                using (var tx = cn.BeginTransaction())
+                {
+                    try
+                    {
+                        int nuevoRolId;
+                        using (var cmd = new SqlCommand(
+                            @"INSERT INTO Rol (Rol_Nombre) VALUES (@nombre); SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                            cn, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@nombre", nombre);
+                            nuevoRolId = (int)cmd.ExecuteScalar();
+                        }
+
+                        foreach (var permisoId in permisosIds.Distinct())
+                        {
+                            using (var cmd = new SqlCommand(
+                                "IF NOT EXISTS (SELECT 1 FROM RolPermiso WHERE Rol_Id = @rol AND Permiso_Id = @permiso) " +
+                                "INSERT INTO RolPermiso (Rol_Id, Permiso_Id) VALUES (@rol, @permiso);",
+                                cn, tx))
+                            {
+                                cmd.Parameters.AddWithValue("@rol", nuevoRolId);
+                                cmd.Parameters.AddWithValue("@permiso", permisoId);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        tx.Commit();
+                        return nuevoRolId;
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
         public bool EmailExiste(string email)
         {
             using (var cn = GetConnection())

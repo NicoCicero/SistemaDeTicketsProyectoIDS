@@ -24,6 +24,8 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private bool _registroVisible = false;   // estado del bloque de registro
         private bool _regRolesCargados = false;  // ya lo tenés: lo dejamos
         private bool _actualizandoEstadoIdioma = false;
+        private bool _verificandoIntegridad = false;
+        private Timer _integridadTimer;
 
         private TabPage _tabRegistrar;
         private TabPage _tabBitacora;
@@ -57,7 +59,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
             bool puedeVerCambios = SessionManager.Instancia.TienePermiso("ControlCambios.Ver");
             bool puedeCrearTicket = usuario.TienePermiso("Ticket.Crear");
             bool puedeGestionarPermisos = SessionManager.Instancia.TienePermiso("Permiso.Gestionar");
-            bool puedeGestionarIdiomas = SessionManager.Instancia.TieneRol("Administrador");
+            bool puedeGestionarIdiomas = SessionManager.Instancia.TienePermiso("Idioma.Gestionar");
 
 
             _tabIdiomas = tabGeneral.TabPages.Count > 1 ? tabGeneral.TabPages[4] : null;
@@ -147,11 +149,19 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 btnCrearBackup.Visible = false;
             }
 
+            InicializarMonitorIntegridad();
+
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             IdiomaManager.Instancia.Desuscribir(this);
+            if (_integridadTimer != null)
+            {
+                _integridadTimer.Stop();
+                _integridadTimer.Tick -= IntegridadTimer_Tick;
+                _integridadTimer.Dispose();
+            }
             base.OnFormClosed(e);
         }
 
@@ -788,6 +798,91 @@ namespace Proyecto_IS_Sistema_De_Tickets
             treeDisponibles.ExpandAll();
         }
 
+        private void btnCrearRol_Click(object sender, EventArgs e)
+        {
+            var nombreRol = txtNuevoRol.Text.Trim();
+            var permisosSeleccionados = new HashSet<int>();
+
+            foreach (TreeNode nodo in treeDisponibles.Nodes)
+            {
+                AgregarPermisosDesdeNodoTree(nodo, permisosSeleccionados);
+            }
+
+            if (string.IsNullOrWhiteSpace(nombreRol))
+            {
+                MessageBox.Show("Ingresá un nombre para el nuevo rol.");
+                return;
+            }
+
+            if (permisosSeleccionados.Count == 0)
+            {
+                MessageBox.Show("Seleccioná al menos un permiso o rol existente para componer el nuevo rol.");
+                return;
+            }
+
+            try
+            {
+                int nuevoRolId = UserAdminService.Instancia.CrearRol(nombreRol, permisosSeleccionados);
+                MessageBox.Show($"Rol creado correctamente (Id={nuevoRolId}).");
+                txtNuevoRol.Clear();
+                LimpiarChecksDisponibles(treeDisponibles.Nodes);
+                CargarRolesYPermisosDisponibles();
+                CargarUsuariosConPermisos();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("No se pudo crear el rol: " + ex.Message);
+            }
+        }
+
+        private void AgregarPermisosDesdeNodoTree(TreeNode nodo, HashSet<int> permisosDestino)
+        {
+            if (nodo == null) return;
+
+            if (nodo.Checked && nodo.Tag is string tag)
+            {
+                if (tag.StartsWith("ROL_"))
+                {
+                    int rolId = int.Parse(tag.Substring(4));
+                    var permisosRol = BL.PermisoService.Instancia.ObtenerPermisosDeRol(rolId);
+                    foreach (var comp in permisosRol)
+                        AplanarPermisos(comp, permisosDestino);
+                }
+                else if (tag.StartsWith("PERM_"))
+                {
+                    AgregarPermisosDesdePermisoNodo(nodo, permisosDestino);
+                }
+            }
+
+            foreach (TreeNode hijo in nodo.Nodes)
+                AgregarPermisosDesdeNodoTree(hijo, permisosDestino);
+        }
+
+        private void AgregarPermisosDesdePermisoNodo(TreeNode nodo, HashSet<int> permisosDestino)
+        {
+            if (nodo == null) return;
+
+            if (nodo.Tag is string tag && tag.StartsWith("PERM_"))
+            {
+                int permisoId = int.Parse(tag.Substring(5));
+                permisosDestino.Add(permisoId);
+            }
+
+            foreach (TreeNode hijo in nodo.Nodes)
+            {
+                AgregarPermisosDesdePermisoNodo(hijo, permisosDestino);
+            }
+        }
+
+        private void LimpiarChecksDisponibles(TreeNodeCollection nodos)
+        {
+            foreach (TreeNode nodo in nodos)
+            {
+                nodo.Checked = false;
+                LimpiarChecksDisponibles(nodo.Nodes);
+            }
+        }
+
         private void btnAsignar_Click(object sender, EventArgs e)
         {
             if (treeUsuarios.SelectedNode == null || treeDisponibles.SelectedNode == null)
@@ -934,6 +1029,106 @@ namespace Proyecto_IS_Sistema_De_Tickets
             dgvListarTraduccion.AutoGenerateColumns = true;
             dgvListarIdiomas.MultiSelect = false;
             dgvListarTraduccion.MultiSelect = false;
+        }
+
+        private void InicializarMonitorIntegridad()
+        {
+            _integridadTimer = new Timer
+            {
+                Interval = 15000
+            };
+            _integridadTimer.Tick += IntegridadTimer_Tick;
+            _integridadTimer.Start();
+        }
+
+        private void IntegridadTimer_Tick(object sender, EventArgs e)
+        {
+            if (_verificandoIntegridad)
+                return;
+
+            VerificarIntegridadEnEjecucion();
+        }
+
+        private void VerificarIntegridadEnEjecucion()
+        {
+            _verificandoIntegridad = true;
+            try
+            {
+                var (ok, detalle) = VerificadorIntegridadService.Instancia.ValidarTodo();
+                if (ok) return;
+
+                bool esAdmin = SessionManager.Instancia.TieneRol("Administrador")
+                    || SessionManager.Instancia.TienePermiso("Permiso.Gestionar");
+
+                _integridadTimer?.Stop();
+                AuthService.Instancia.Logout();
+
+                if (!esAdmin)
+                {
+                    MessageBox.Show("No se puede usar la aplicación en este momento debido a una inconsistencia en los datos.");
+                    Application.Restart();
+                    return;
+                }
+
+                bool reparado = MostrarDialogoIntegridadEnEjecucion(detalle);
+                if (reparado)
+                {
+                    Application.Restart();
+                }
+                else
+                {
+                    Application.Exit();
+                }
+            }
+            finally
+            {
+                _verificandoIntegridad = false;
+            }
+        }
+
+        private bool MostrarDialogoIntegridadEnEjecucion(string detalle)
+        {
+            while (true)
+            {
+                var rutaBackup = DatabaseMaintenanceService.Instancia.RutaBackupPorDefecto;
+                var respuesta = MessageBox.Show(
+                    "Se detectó una inconsistencia de integridad (DVH/DVV).\n\n" +
+                    detalle + "\n\n" +
+                    $"Presioná 'Sí' para restaurar la base desde {rutaBackup}.\n" +
+                    "Presioná 'No' si ya corregiste la base manualmente y querés revalidar.\n" +
+                    "Presioná 'Cancelar' para cerrar la aplicación.",
+                    "Integridad de datos",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Stop,
+                    MessageBoxDefaultButton.Button1);
+
+                if (respuesta == DialogResult.Cancel)
+                    return false;
+
+                if (respuesta == DialogResult.Yes)
+                {
+                    try
+                    {
+                        DatabaseMaintenanceService.Instancia.RestaurarDesdeBackup();
+                        MessageBox.Show("Se restauró la base de datos desde el backup seleccionado.");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("No se pudo restaurar la base de datos: " + ex.Message);
+                        continue;
+                    }
+                }
+
+                var (ok, nuevoDetalle) = VerificadorIntegridadService.Instancia.ValidarTodo();
+                if (ok)
+                {
+                    MessageBox.Show("La base de datos recuperó la consistencia. La aplicación se reiniciará.");
+                    return true;
+                }
+
+                detalle = nuevoDetalle;
+                MessageBox.Show("La inconsistencia persiste. Restaurá el backup o corregí el problema en SQL Server para continuar.");
+            }
         }
 
         private void RecargarComboIdiomas()

@@ -115,28 +115,28 @@ namespace Proyecto_IS_Sistema_De_Tickets
             //    lnkOlvido.Text = "[ " + t["LOGIN_CONTRASENA"] + " ? ]"; // o una etiqueta propia
         }
 
-        private void MostrarDialogoIntegridad(string detalle)
+        private bool MostrarDialogoIntegridad(string detalle)
         {
             var rutaBackup = BL.DatabaseMaintenanceService.Instancia.RutaBackupPorDefecto;
 
-            var mensaje =
-                "Se detectó una inconsistencia de integridad (DVH/DVV).\n\n" +
-                detalle + "\n\n" +
-                "Elegí una acción:\n" +
-                $"- Presioná 'Sí' para restaurar la base desde {rutaBackup}.\n" +
-                "- Presioná 'No' para aceptar los errores y recalcular DVH/DVV.\n" +
-                "- Presioná 'Cancelar' para continuar sin cambios.";
-
-            var r = MessageBox.Show(
-                mensaje,
-                "Integridad de datos",
-                MessageBoxButtons.YesNoCancel,
-                MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button1);
-
-            switch (r)
+            while (true)
             {
-                case DialogResult.Yes:
+                var r = MessageBox.Show(
+                    "Se detectó una inconsistencia de integridad (DVH/DVV).\n\n" +
+                    detalle + "\n\n" +
+                    $"- Presioná 'Sí' para restaurar la base desde {rutaBackup}.\n" +
+                    "- Presioná 'No' si ya corregiste la base manualmente y querés revalidar.\n" +
+                    "- Presioná 'Cancelar' para cancelar el inicio de sesión.",
+                    "Integridad de datos",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Warning,
+                    MessageBoxDefaultButton.Button1);
+
+                if (r == DialogResult.Cancel)
+                    return false;
+
+                if (r == DialogResult.Yes)
+                {
                     try
                     {
                         BL.DatabaseMaintenanceService.Instancia.RestaurarDesdeBackup();
@@ -145,23 +145,19 @@ namespace Proyecto_IS_Sistema_De_Tickets
                     catch (Exception ex)
                     {
                         MessageBox.Show("No se pudo restaurar la base de datos: " + ex.Message);
+                        continue;
                     }
-                    break;
+                }
 
-                case DialogResult.No:
-                    try
-                    {
-                        BL.VerificadorIntegridadService.Instancia.RecalcularTodo();
-                        MessageBox.Show("Se recalcularon los DVH/DVV.");
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("No se pudieron recalcular los DVH/DVV: " + ex.Message);
-                    }
-                    break;
+                var (ok, nuevoDetalle) = BL.VerificadorIntegridadService.Instancia.ValidarTodo();
+                if (ok)
+                {
+                    MessageBox.Show("La base de datos recuperó la consistencia.");
+                    return true;
+                }
 
-                default:
-                    break;
+                detalle = nuevoDetalle;
+                MessageBox.Show("La inconsistencia persiste. Restaurá el backup o corregila desde SQL Server para continuar.");
             }
         }
 
@@ -325,15 +321,21 @@ ALTER DATABASE {databaseName} SET MULTI_USER;";
 
             if (!esAdmin)
             {
-                MsgError("Error inesperado. Intente más tarde.");
+                MsgError("No se puede loguear en este momento.");
                 AuthService.Instancia.Logout();
                 ActivarPlaceholderContraseña();
                 txt_Usuario.Focus();
                 return false;
             }
 
-            MostrarDialogoIntegridad(detalle);
-            return true;
+            bool reparado = MostrarDialogoIntegridad(detalle);
+            if (!reparado)
+            {
+                AuthService.Instancia.Logout();
+                ActivarPlaceholderContraseña();
+                txt_Usuario.Focus();
+            }
+            return reparado;
         }
 
 
