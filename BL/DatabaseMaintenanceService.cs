@@ -14,7 +14,7 @@ namespace BL
         private readonly DatabaseMaintenanceRepository _repo = new DatabaseMaintenanceRepository();
 
         private const string DatabaseName = "BDSistemaDeTickets";
-        private const string CarpetaBackup = @"C:\Program Files\Microsoft SQL Server\MSSQL17.MSSQLSERVER01\MSSQL\Backup";
+        private const string CarpetaBackup = @"C:\Program Files\Microsoft SQL Server\MSSQL17.SQLEXPRESS\MSSQL\Backup";
 
         private DatabaseMaintenanceService() { }
 

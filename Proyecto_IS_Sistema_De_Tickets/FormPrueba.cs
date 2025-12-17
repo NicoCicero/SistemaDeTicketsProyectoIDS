@@ -1487,6 +1487,11 @@ namespace Proyecto_IS_Sistema_De_Tickets
         {
 
         }
+
+        private void tabMenuPrincipal_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
 
