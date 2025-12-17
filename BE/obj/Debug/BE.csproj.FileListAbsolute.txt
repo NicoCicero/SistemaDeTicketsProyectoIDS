@@ -16,3 +16,9 @@ C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\obj\Debug\BE.csproj.A
 C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\obj\Debug\BE.csproj.CoreCompileInputs.cache
 C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\obj\Debug\BE.dll
 C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BE\obj\Debug\BE.pdb
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BE\bin\Debug\BE.dll
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BE\bin\Debug\BE.pdb
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BE\obj\Debug\BE.csproj.AssemblyReference.cache
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BE\obj\Debug\BE.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BE\obj\Debug\BE.dll
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BE\obj\Debug\BE.pdb

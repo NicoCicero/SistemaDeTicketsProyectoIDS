@@ -36,6 +36,8 @@ namespace BL
         public bool TienePermiso(string nombrePermiso)
         {
             if (UsuarioActual == null) return false;
+            if (TieneRol("Administrador"))
+                return true;
             return UsuarioActual.TienePermiso(nombrePermiso);
         }
 

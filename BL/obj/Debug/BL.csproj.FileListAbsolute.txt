@@ -42,3 +42,14 @@ C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BL\obj\Debug\BL.csproj.C
 C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BL\obj\Debug\BL.csproj.Up2Date
 C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BL\obj\Debug\BL.dll
 C:\Users\nicol\Source\Repos\SistemaDeTicketsProyectoIDS\BL\obj\Debug\BL.pdb
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\bin\Debug\BL.dll
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\bin\Debug\BL.pdb
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\bin\Debug\BE.dll
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\bin\Debug\DAO.dll
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\bin\Debug\BE.pdb
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\bin\Debug\DAO.pdb
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\obj\Debug\BL.csproj.AssemblyReference.cache
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\obj\Debug\BL.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\obj\Debug\BL.csproj.Up2Date
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\obj\Debug\BL.dll
+C:\Users\Administrator\source\repos\SistemaDeTicketsProyectoIDS1\BL\obj\Debug\BL.pdb
