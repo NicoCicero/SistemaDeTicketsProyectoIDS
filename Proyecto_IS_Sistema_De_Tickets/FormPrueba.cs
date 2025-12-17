@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SqlClient;
+using System.Reflection;
 
 namespace Proyecto_IS_Sistema_De_Tickets
 {
@@ -20,6 +21,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private readonly IdiomaService _idiomaSrv = new IdiomaService();
         private readonly AuditoriaService _auditoriaSrv = AuditoriaService.Instancia;
         private readonly ControlCambiosService _controlCambiosSrv = ControlCambiosService.Instancia;
+        private readonly DashboardService _dashboardService = new DashboardService();
 
         private bool _registroVisible = false;   // estado del bloque de registro
         private bool _regRolesCargados = false;  // ya lo tenés: lo dejamos
@@ -32,6 +34,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private TabPage _tabCambios;
         private TabPage _tabPermisos;
         private TabPage _tabIdiomas;
+        private BindingList<PublicActivityItem> _actividadPublica = new BindingList<PublicActivityItem>();
         public FormPrueba()
         {
             InitializeComponent();
@@ -149,6 +152,7 @@ namespace Proyecto_IS_Sistema_De_Tickets
                 btnCrearBackup.Visible = false;
             }
 
+            InicializarDashboardPublico();
             InicializarMonitorIntegridad();
 
         }
@@ -209,6 +213,41 @@ namespace Proyecto_IS_Sistema_De_Tickets
             btnLimpiarCambios.Text = t["BTN_LIMPIAR"];
         }
 
+        private void InicializarDashboardPublico()
+        {
+            dgvActividadPublica.AutoGenerateColumns = false;
+            if (cmbFiltroActividad.SelectedIndex < 0 && cmbFiltroActividad.Items.Count > 0)
+                cmbFiltroActividad.SelectedIndex = 0;
+
+            RefrescarEstadoPublico();
+        }
+
+        private void RefrescarEstadoPublico()
+        {
+            string idiomaActual = cmbIdiomas.SelectedItem is Idioma idiomaSel ? idiomaSel.Nombre : cmbIdiomas.Text;
+            string version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "-";
+            string filtro = cmbFiltroActividad.SelectedItem as string ?? "Todos";
+
+            var estado = _dashboardService.ConstruirEstadoPublico(idiomaActual, version, filtro);
+
+            lblEstadoDb.Text = estado.BaseDatosConectada ? "Base de datos: Conectada" : "Base de datos: Sin conexión";
+            lblEstadoDb.ForeColor = estado.BaseDatosConectada ? Color.ForestGreen : Color.Firebrick;
+            lblHoraServidor.Text = estado.HoraServidorUtc.HasValue
+                ? $"Hora servidor (UTC): {estado.HoraServidorUtc:HH:mm:ss}"
+                : "Hora servidor (UTC): Sin conexión";
+            lblHoraLocal.Text = $"Hora local: {estado.HoraLocal:HH:mm:ss}";
+            lblIdiomaActual.Text = $"Idioma actual: {estado.IdiomaActual}";
+            lblVersionApp.Text = $"Versión: {estado.VersionAplicacion}";
+
+            _actividadPublica = new BindingList<PublicActivityItem>(estado.ActividadPublica ?? new List<PublicActivityItem>());
+            dgvActividadPublica.DataSource = _actividadPublica;
+
+            lblActividadVacia.Text = estado.BaseDatosConectada
+                ? "Aún no hay eventos para mostrar."
+                : "Sin conexión. Los eventos no están disponibles.";
+            lblActividadVacia.Visible = _actividadPublica.Count == 0;
+        }
+
         private void btnCerrarSesion_Click(object sender, EventArgs e)
         {
             // Cierra la sesión en DB (marca FinUtc y escribe auditoría)
@@ -216,6 +255,24 @@ namespace Proyecto_IS_Sistema_De_Tickets
 
             // Volvemos limpio al login (lo más simple para WinForms)
             Application.Restart();
+        }
+
+        private void btnActualizarEstado_Click(object sender, EventArgs e)
+        {
+            RefrescarEstadoPublico();
+        }
+
+        private void cmbFiltroActividad_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RefrescarEstadoPublico();
+        }
+
+        private void btnSobreProyecto_Click(object sender, EventArgs e)
+        {
+            using (var frm = new FormSobreProyecto())
+            {
+                frm.ShowDialog(this);
+            }
         }
 
         private void TabGeneral_SelectedIndexChanged(object sender, EventArgs e)

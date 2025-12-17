@@ -44,6 +44,7 @@
     <Compile Include="AdminSeedHelper.cs" />
     <Compile Include="AuditoriaService.cs" />
     <Compile Include="AuthService.cs" />
+    <Compile Include="DashboardService.cs" />
     <Compile Include="DatabaseMaintenanceService.cs" />
     <Compile Include="CryptoManager.cs" />
     <Compile Include="ControlCambiosService.cs" />
@@ -52,6 +53,7 @@
     <Compile Include="IdiomaService.cs" />
     <Compile Include="IIdiomaObserver.cs" />
     <Compile Include="PermisoService.cs" />
+    <Compile Include="SeguridadBootstrapService.cs" />
     <Compile Include="SessionManager.cs" />
     <Compile Include="UserAdminService.cs" />
     <Compile Include="UserLoginBL.cs" />

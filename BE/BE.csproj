@@ -49,6 +49,7 @@
     <Compile Include="PermisoComponent.cs" />
     <Compile Include="PermisoComposite.cs" />
     <Compile Include="PermisoNodo.cs" />
+    <Compile Include="SystemStatusInfo.cs" />
     <Compile Include="Rol.cs" />
     <Compile Include="Sesion.cs" />
     <Compile Include="Usuario.cs" />
