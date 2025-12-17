@@ -36,6 +36,22 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             this.tabGeneral = new System.Windows.Forms.TabControl();
             this.tabMenuPrincipal = new System.Windows.Forms.TabPage();
+            this.lblVersionApp = new System.Windows.Forms.Label();
+            this.lblIdiomaActual = new System.Windows.Forms.Label();
+            this.lblHoraLocal = new System.Windows.Forms.Label();
+            this.lblHoraServidor = new System.Windows.Forms.Label();
+            this.lblEstadoDb = new System.Windows.Forms.Label();
+            this.btnActualizarEstado = new System.Windows.Forms.Button();
+            this.groupBoxEstado = new System.Windows.Forms.GroupBox();
+            this.btnSobreProyecto = new System.Windows.Forms.Button();
+            this.lblActividadVacia = new System.Windows.Forms.Label();
+            this.dgvActividadPublica = new System.Windows.Forms.DataGridView();
+            this.colFechaActividad = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colCategoriaActividad = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colDescripcionActividad = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cmbFiltroActividad = new System.Windows.Forms.ComboBox();
+            this.lblFiltroActividad = new System.Windows.Forms.Label();
+            this.groupBoxActividad = new System.Windows.Forms.GroupBox();
             this.btnCrearBackup = new System.Windows.Forms.Button();
             this.cmbIdiomas = new System.Windows.Forms.ComboBox();
             this.tabIdiomas = new System.Windows.Forms.TabPage();
@@ -102,6 +118,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             this.tabGeneral.SuspendLayout();
             this.tabMenuPrincipal.SuspendLayout();
+            this.groupBoxEstado.SuspendLayout();
+            this.groupBoxActividad.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvActividadPublica)).BeginInit();
             this.tabIdiomas.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvListarTraduccion)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvListarIdiomas)).BeginInit();
@@ -149,6 +168,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             //
             // tabMenuPrincipal
             //
+            this.tabMenuPrincipal.Controls.Add(this.groupBoxActividad);
+            this.tabMenuPrincipal.Controls.Add(this.btnSobreProyecto);
+            this.tabMenuPrincipal.Controls.Add(this.groupBoxEstado);
             this.tabMenuPrincipal.Controls.Add(this.btnCrearBackup);
             this.tabMenuPrincipal.Controls.Add(this.cmbIdiomas);
             this.tabMenuPrincipal.Location = new System.Drawing.Point(4, 22);
@@ -160,9 +182,182 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabMenuPrincipal.Text = "Menu Principal";
             this.tabMenuPrincipal.UseVisualStyleBackColor = true;
             //
+            // groupBoxEstado
+            //
+            this.groupBoxEstado.Controls.Add(this.lblVersionApp);
+            this.groupBoxEstado.Controls.Add(this.lblIdiomaActual);
+            this.groupBoxEstado.Controls.Add(this.lblHoraLocal);
+            this.groupBoxEstado.Controls.Add(this.lblHoraServidor);
+            this.groupBoxEstado.Controls.Add(this.lblEstadoDb);
+            this.groupBoxEstado.Controls.Add(this.btnActualizarEstado);
+            this.groupBoxEstado.Location = new System.Drawing.Point(18, 30);
+            this.groupBoxEstado.Name = "groupBoxEstado";
+            this.groupBoxEstado.Size = new System.Drawing.Size(355, 165);
+            this.groupBoxEstado.TabIndex = 4;
+            this.groupBoxEstado.TabStop = false;
+            this.groupBoxEstado.Text = "Estado del sistema";
+            //
+            // lblVersionApp
+            //
+            this.lblVersionApp.AutoSize = true;
+            this.lblVersionApp.Location = new System.Drawing.Point(16, 114);
+            this.lblVersionApp.Name = "lblVersionApp";
+            this.lblVersionApp.Size = new System.Drawing.Size(80, 13);
+            this.lblVersionApp.TabIndex = 5;
+            this.lblVersionApp.Text = "Versión: -";
+            //
+            // lblIdiomaActual
+            //
+            this.lblIdiomaActual.AutoSize = true;
+            this.lblIdiomaActual.Location = new System.Drawing.Point(16, 92);
+            this.lblIdiomaActual.Name = "lblIdiomaActual";
+            this.lblIdiomaActual.Size = new System.Drawing.Size(89, 13);
+            this.lblIdiomaActual.TabIndex = 4;
+            this.lblIdiomaActual.Text = "Idioma actual: -";
+            //
+            // lblHoraLocal
+            //
+            this.lblHoraLocal.AutoSize = true;
+            this.lblHoraLocal.Location = new System.Drawing.Point(16, 70);
+            this.lblHoraLocal.Name = "lblHoraLocal";
+            this.lblHoraLocal.Size = new System.Drawing.Size(74, 13);
+            this.lblHoraLocal.TabIndex = 3;
+            this.lblHoraLocal.Text = "Hora local: -";
+            //
+            // lblHoraServidor
+            //
+            this.lblHoraServidor.AutoSize = true;
+            this.lblHoraServidor.Location = new System.Drawing.Point(16, 48);
+            this.lblHoraServidor.Name = "lblHoraServidor";
+            this.lblHoraServidor.Size = new System.Drawing.Size(130, 13);
+            this.lblHoraServidor.TabIndex = 2;
+            this.lblHoraServidor.Text = "Hora servidor (UTC): -";
+            //
+            // lblEstadoDb
+            //
+            this.lblEstadoDb.AutoSize = true;
+            this.lblEstadoDb.Location = new System.Drawing.Point(16, 26);
+            this.lblEstadoDb.Name = "lblEstadoDb";
+            this.lblEstadoDb.Size = new System.Drawing.Size(123, 13);
+            this.lblEstadoDb.TabIndex = 1;
+            this.lblEstadoDb.Text = "Base de datos: -";
+            //
+            // btnActualizarEstado
+            //
+            this.btnActualizarEstado.Location = new System.Drawing.Point(19, 132);
+            this.btnActualizarEstado.Name = "btnActualizarEstado";
+            this.btnActualizarEstado.Size = new System.Drawing.Size(131, 24);
+            this.btnActualizarEstado.TabIndex = 0;
+            this.btnActualizarEstado.Text = "Actualizar estado";
+            this.btnActualizarEstado.UseVisualStyleBackColor = true;
+            this.btnActualizarEstado.Click += new System.EventHandler(this.btnActualizarEstado_Click);
+            //
+            // btnSobreProyecto
+            //
+            this.btnSobreProyecto.Location = new System.Drawing.Point(407, 44);
+            this.btnSobreProyecto.Name = "btnSobreProyecto";
+            this.btnSobreProyecto.Size = new System.Drawing.Size(210, 60);
+            this.btnSobreProyecto.TabIndex = 3;
+            this.btnSobreProyecto.Text = "¿De qué se trata este proyecto?";
+            this.btnSobreProyecto.UseVisualStyleBackColor = true;
+            this.btnSobreProyecto.Click += new System.EventHandler(this.btnSobreProyecto_Click);
+            //
+            // groupBoxActividad
+            //
+            this.groupBoxActividad.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxActividad.Controls.Add(this.lblActividadVacia);
+            this.groupBoxActividad.Controls.Add(this.dgvActividadPublica);
+            this.groupBoxActividad.Controls.Add(this.cmbFiltroActividad);
+            this.groupBoxActividad.Controls.Add(this.lblFiltroActividad);
+            this.groupBoxActividad.Location = new System.Drawing.Point(19, 201);
+            this.groupBoxActividad.Name = "groupBoxActividad";
+            this.groupBoxActividad.Size = new System.Drawing.Size(720, 171);
+            this.groupBoxActividad.TabIndex = 2;
+            this.groupBoxActividad.TabStop = false;
+            this.groupBoxActividad.Text = "Actividad reciente pública";
+            //
+            // lblActividadVacia
+            //
+            this.lblActividadVacia.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblActividadVacia.AutoSize = true;
+            this.lblActividadVacia.Location = new System.Drawing.Point(16, 149);
+            this.lblActividadVacia.Name = "lblActividadVacia";
+            this.lblActividadVacia.Size = new System.Drawing.Size(207, 13);
+            this.lblActividadVacia.TabIndex = 3;
+            this.lblActividadVacia.Text = "Aún no hay eventos para mostrar.";
+            //
+            // dgvActividadPublica
+            //
+            this.dgvActividadPublica.AllowUserToAddRows = false;
+            this.dgvActividadPublica.AllowUserToDeleteRows = false;
+            this.dgvActividadPublica.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvActividadPublica.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvActividadPublica.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvActividadPublica.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colFechaActividad,
+            this.colCategoriaActividad,
+            this.colDescripcionActividad});
+            this.dgvActividadPublica.Location = new System.Drawing.Point(19, 45);
+            this.dgvActividadPublica.MultiSelect = false;
+            this.dgvActividadPublica.Name = "dgvActividadPublica";
+            this.dgvActividadPublica.ReadOnly = true;
+            this.dgvActividadPublica.RowHeadersVisible = false;
+            this.dgvActividadPublica.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvActividadPublica.Size = new System.Drawing.Size(682, 97);
+            this.dgvActividadPublica.TabIndex = 2;
+            //
+            // colFechaActividad
+            //
+            this.colFechaActividad.DataPropertyName = "FechaLocal";
+            this.colFechaActividad.HeaderText = "Fecha";
+            this.colFechaActividad.Name = "colFechaActividad";
+            this.colFechaActividad.ReadOnly = true;
+            //
+            // colCategoriaActividad
+            //
+            this.colCategoriaActividad.DataPropertyName = "Categoria";
+            this.colCategoriaActividad.HeaderText = "Categoría";
+            this.colCategoriaActividad.Name = "colCategoriaActividad";
+            this.colCategoriaActividad.ReadOnly = true;
+            //
+            // colDescripcionActividad
+            //
+            this.colDescripcionActividad.DataPropertyName = "Descripcion";
+            this.colDescripcionActividad.HeaderText = "Descripción";
+            this.colDescripcionActividad.Name = "colDescripcionActividad";
+            this.colDescripcionActividad.ReadOnly = true;
+            //
+            // cmbFiltroActividad
+            //
+            this.cmbFiltroActividad.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbFiltroActividad.FormattingEnabled = true;
+            this.cmbFiltroActividad.Items.AddRange(new object[] {
+            "Todos",
+            "Sistema",
+            "Tickets",
+            "Idioma"});
+            this.cmbFiltroActividad.Location = new System.Drawing.Point(100, 19);
+            this.cmbFiltroActividad.Name = "cmbFiltroActividad";
+            this.cmbFiltroActividad.Size = new System.Drawing.Size(121, 21);
+            this.cmbFiltroActividad.TabIndex = 1;
+            this.cmbFiltroActividad.SelectedIndexChanged += new System.EventHandler(this.cmbFiltroActividad_SelectedIndexChanged);
+            //
+            // lblFiltroActividad
+            //
+            this.lblFiltroActividad.AutoSize = true;
+            this.lblFiltroActividad.Location = new System.Drawing.Point(16, 23);
+            this.lblFiltroActividad.Name = "lblFiltroActividad";
+            this.lblFiltroActividad.Size = new System.Drawing.Size(29, 13);
+            this.lblFiltroActividad.TabIndex = 0;
+            this.lblFiltroActividad.Text = "Filtro";
+            //
             // btnCrearBackup
             //
-            this.btnCrearBackup.Location = new System.Drawing.Point(21, 18);
+            this.btnCrearBackup.Location = new System.Drawing.Point(407, 110);
             this.btnCrearBackup.Name = "btnCrearBackup";
             this.btnCrearBackup.Size = new System.Drawing.Size(160, 40);
             this.btnCrearBackup.TabIndex = 1;
@@ -831,6 +1026,11 @@ namespace Proyecto_IS_Sistema_De_Tickets
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             this.tabGeneral.ResumeLayout(false);
             this.tabMenuPrincipal.ResumeLayout(false);
+            this.groupBoxEstado.ResumeLayout(false);
+            this.groupBoxEstado.PerformLayout();
+            this.groupBoxActividad.ResumeLayout(false);
+            this.groupBoxActividad.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvActividadPublica)).EndInit();
             this.tabIdiomas.ResumeLayout(false);
             this.tabIdiomas.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvListarTraduccion)).EndInit();
@@ -925,5 +1125,21 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private System.Windows.Forms.DataGridView dgvListarIdiomas;
         private System.Windows.Forms.Label lblTraduccion;
         private System.Windows.Forms.Label lblNuevoIdioma;
+        private System.Windows.Forms.GroupBox groupBoxEstado;
+        private System.Windows.Forms.Button btnActualizarEstado;
+        private System.Windows.Forms.Label lblEstadoDb;
+        private System.Windows.Forms.Label lblHoraServidor;
+        private System.Windows.Forms.Label lblHoraLocal;
+        private System.Windows.Forms.Label lblIdiomaActual;
+        private System.Windows.Forms.Label lblVersionApp;
+        private System.Windows.Forms.Button btnSobreProyecto;
+        private System.Windows.Forms.GroupBox groupBoxActividad;
+        private System.Windows.Forms.Label lblActividadVacia;
+        private System.Windows.Forms.DataGridView dgvActividadPublica;
+        private System.Windows.Forms.ComboBox cmbFiltroActividad;
+        private System.Windows.Forms.Label lblFiltroActividad;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colFechaActividad;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colCategoriaActividad;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colDescripcionActividad;
     }
 }

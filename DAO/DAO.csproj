@@ -42,10 +42,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuditoriaRepository.cs" />
+    <Compile Include="HealthRepository.cs" />
     <Compile Include="ControlCambiosRepository.cs" />
     <Compile Include="DatabaseMaintenanceRepository.cs" />
     <Compile Include="DAL.cs" />
     <Compile Include="DvRawRepository.cs" />
+    <Compile Include="SeguridadBootstrapRepository.cs" />
     <Compile Include="DvvRepository.cs" />
     <Compile Include="HashHelperDAL.cs" />
     <Compile Include="IdiomaRepository.cs" />

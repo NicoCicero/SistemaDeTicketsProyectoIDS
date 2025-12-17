@@ -64,6 +64,12 @@
     <Compile Include="FormPrueba.Designer.cs">
       <DependentUpon>FormPrueba.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormSobreProyecto.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormSobreProyecto.Designer.cs">
+      <DependentUpon>FormSobreProyecto.cs</DependentUpon>
+    </Compile>
     <Compile Include="PermisoTreeHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
