@@ -89,6 +89,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.txtCambioUsuarioId = new System.Windows.Forms.TextBox();
             this.dgvCambios = new System.Windows.Forms.DataGridView();
             this.tabPermisos = new System.Windows.Forms.TabPage();
+            this.btnCrearRol = new System.Windows.Forms.Button();
+            this.txtNuevoRol = new System.Windows.Forms.TextBox();
+            this.lblNuevoRol = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.lblUsuarioSel = new System.Windows.Forms.Label();
             this.btnAsignar = new System.Windows.Forms.Button();
@@ -716,6 +719,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
             // 
             // tabPermisos
             // 
+            this.tabPermisos.Controls.Add(this.btnCrearRol);
+            this.tabPermisos.Controls.Add(this.txtNuevoRol);
+            this.tabPermisos.Controls.Add(this.lblNuevoRol);
             this.tabPermisos.Controls.Add(this.button1);
             this.tabPermisos.Controls.Add(this.lblUsuarioSel);
             this.tabPermisos.Controls.Add(this.btnAsignar);
@@ -728,9 +734,35 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.tabPermisos.TabIndex = 4;
             this.tabPermisos.Text = "Permisos";
             this.tabPermisos.UseVisualStyleBackColor = true;
-            // 
+            //
+            // btnCrearRol
+            //
+            this.btnCrearRol.Location = new System.Drawing.Point(328, 102);
+            this.btnCrearRol.Name = "btnCrearRol";
+            this.btnCrearRol.Size = new System.Drawing.Size(108, 23);
+            this.btnCrearRol.TabIndex = 8;
+            this.btnCrearRol.Text = "Crear rol";
+            this.btnCrearRol.UseVisualStyleBackColor = true;
+            this.btnCrearRol.Click += new System.EventHandler(this.btnCrearRol_Click);
+            //
+            // txtNuevoRol
+            //
+            this.txtNuevoRol.Location = new System.Drawing.Point(225, 104);
+            this.txtNuevoRol.Name = "txtNuevoRol";
+            this.txtNuevoRol.Size = new System.Drawing.Size(95, 20);
+            this.txtNuevoRol.TabIndex = 7;
+            //
+            // lblNuevoRol
+            //
+            this.lblNuevoRol.AutoSize = true;
+            this.lblNuevoRol.Location = new System.Drawing.Point(222, 88);
+            this.lblNuevoRol.Name = "lblNuevoRol";
+            this.lblNuevoRol.Size = new System.Drawing.Size(56, 13);
+            this.lblNuevoRol.TabIndex = 6;
+            this.lblNuevoRol.Text = "Nuevo rol";
+            //
             // button1
-            // 
+            //
             this.button1.Location = new System.Drawing.Point(328, 276);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(108, 23);
@@ -767,9 +799,10 @@ namespace Proyecto_IS_Sistema_De_Tickets
             this.btnQuitar.Text = "Quitar Permiso";
             this.btnQuitar.UseVisualStyleBackColor = true;
             this.btnQuitar.Click += new System.EventHandler(this.btnQuitar_Click);
-            // 
+            //
             // treeDisponibles
-            // 
+            //
+            this.treeDisponibles.CheckBoxes = true;
             this.treeDisponibles.Location = new System.Drawing.Point(534, 3);
             this.treeDisponibles.Name = "treeDisponibles";
             this.treeDisponibles.Size = new System.Drawing.Size(213, 377);
@@ -876,6 +909,9 @@ namespace Proyecto_IS_Sistema_De_Tickets
         private System.Windows.Forms.Button btnCrearBackup;
         private Button btnEliminar;
         private Button button1;
+        private System.Windows.Forms.Label lblNuevoRol;
+        private System.Windows.Forms.TextBox txtNuevoRol;
+        private System.Windows.Forms.Button btnCrearRol;
         private System.Windows.Forms.TabPage tabIdiomas;
         private System.Windows.Forms.RadioButton rbtnIdiomaInactivo;
         private System.Windows.Forms.RadioButton rbtnIdiomaActivo;

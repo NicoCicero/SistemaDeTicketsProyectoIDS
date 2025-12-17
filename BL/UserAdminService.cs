@@ -37,6 +37,24 @@ namespace BL
             return _repo.ListarRoles();
         }
 
+        public int CrearRol(string nombre, IEnumerable<int> permisosIds)
+        {
+            if (!SessionManager.Instancia.TienePermiso("Permiso.Gestionar"))
+                throw new UnauthorizedAccessException("No contás con permiso para gestionar permisos.");
+
+            if (string.IsNullOrWhiteSpace(nombre))
+                throw new ArgumentException("El nombre del rol es obligatorio", nameof(nombre));
+
+            var permisosSeleccionados = permisosIds?.Distinct().ToList() ?? new List<int>();
+            if (permisosSeleccionados.Count == 0)
+                throw new ArgumentException("Debés seleccionar al menos un permiso para crear el rol.");
+
+            if (_repo.RolExiste(nombre))
+                throw new InvalidOperationException("Ya existe un rol con ese nombre.");
+
+            return _repo.CrearRol(nombre.Trim(), permisosSeleccionados);
+        }
+
         public Usuario ObtenerUsuarioCompleto(int id)
         {
             if (!SessionManager.Instancia.TienePermiso("Usuario.Modificar"))
